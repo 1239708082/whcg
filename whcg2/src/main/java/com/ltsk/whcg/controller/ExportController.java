@@ -1,0 +1,348 @@
+package com.ltsk.whcg.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
+
+import com.alibaba.fastjson.JSONArray;
+import com.ltsk.whcg.entity.Czjl;
+import com.ltsk.whcg.entity.GarbageNow;
+import com.ltsk.whcg.service.KitchenWasteFactoryService;
+import com.ltsk.whcg.utils.DateTime;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+
+/**
+ * 垃圾称重记录统计报表 打印报表服务
+ * 
+ * @author Administrator
+ *
+ */
+@RestController
+public class ExportController {
+	
+
+	@Autowired
+	private KitchenWasteFactoryService kwfService;
+	@Autowired
+	private RedisTemplate redisTemplate;
+
+	
+	// 查询垃圾称重记录报表
+	@ResponseBody
+	@RequestMapping(value = "/garbageToday")
+	public Result getAll(@RequestParam(value = "time") String startTime, @RequestParam(value = "area") String area,
+			@RequestParam(value = "unit") String unit, @RequestParam(value = "page") Integer page,
+			@RequestParam(value = "rows") Integer rows) {
+
+		Map<String, Object> res = new HashMap<>();
+		if ("全市".equals(area)) {
+			area = null;
+		}
+		if ("全部".equals(unit)) {
+			unit = null;
+		}
+		String endTime = "";
+		if (startTime == null || "".equals(startTime) || "null".equals(startTime)) {
+			startTime = DateTime.getTodayTime();
+			res.put("title1", startTime + "统计");
+			startTime = DateTime.getTodayTime()+"00:00:00";
+			endTime = DateTime.getTodayTime()+" 23:59:59";
+			redisTemplate.opsForValue().set("shlj_daily_time", DateTime.getTodayTime());
+
+		} else {
+			res.put("title1", startTime+" 日统计");
+			endTime = startTime.replace("/", "-")+" 23:59:59";
+			startTime = startTime.replace("/", "-")+" 00:00:00";
+			redisTemplate.opsForValue().set("shlj_daily_time", startTime.substring(0, 11));
+		}
+		Double inNum = kwfService.getInNum(startTime,endTime, area, unit);
+		Integer in = kwfService.getIn(startTime,endTime, area, unit);
+		Double outNum = kwfService.getOutNum(startTime,endTime, area, unit);
+		Integer out = kwfService.getOut(startTime,endTime, area, unit);
+		String title = "进厂量(吨):" + inNum + "   进厂车次:" + in + "    出厂量(吨):" + outNum + "    出厂车次:" + out;
+		res.put("title2", title);
+		 List<Czjl> totalList =kwfService.getAllToday(page*rows,(page-1)*rows,startTime,endTime, area, unit);
+//		 for (Czjl czjl : list) {
+//		 String pro = (String) czjl.getProductinorout();
+//		 if ("1".equals(pro)) {
+//		 pro = "进";
+//		 } else {
+//		 pro = "出";
+//		 }
+//		 czjl.setProductinorout(pro);
+//		 }
+		// 将同样条件所有的list查出来做导出.
+//		List<Czjl> totalList = kwfService.getAllList(startTime,endTime, area, unit);
+		Integer total = kwfService.getCountToday(startTime, endTime, area, unit);
+
+		if(totalList.size()<1){
+			return ResultUtils.success(new HashMap<>());
+		}
+		String pro=null;
+		for (Czjl czjl : totalList) {
+			 pro = (String) czjl.getProductinorout();
+			if ("1".equals(pro)) {
+				pro = "进";
+			} else {
+				pro = "出";
+			}
+			czjl.setProductinorout(pro);
+		}
+//		int export_times = totalList.size() % rows > 0 ? totalList.size() / rows + 1 : totalList.size() / rows;
+//		Integer stPage = (page - 1) * rows;
+//		if(stPage>=totalList.size()){
+//			return ResultUtils.success(new HashMap<>());
+//		}
+//		Integer endPage = page * rows;
+//		if (page == export_times||endPage>=totalList.size()) {
+//			endPage = totalList.size();
+//		}
+//		List<Czjl> list = totalList.subList(stPage, endPage);
+		// 把指定条件分页的list查出来
+		res.put("list", totalList);
+		List<String> units = new ArrayList<>();
+		units.add("全部");
+		List<String> newUnits = kwfService.getUnit();
+		units.addAll(newUnits);
+		List<String> areas = new ArrayList<>();
+		areas.add("全市");
+		List<String> newAreas = kwfService.getArea();
+		areas.addAll(newAreas);
+		// 得到所有的处理厂
+		res.put("unit", units);
+		// 得到所有的区域
+		res.put("area", areas);
+//		Integer total = kwfService.getCountToday(startTime,endTime, area, unit);
+		res.put("total", total);
+		if(area==null||"".equals(area)){
+			area="null";
+		}
+		if(unit==null||"".equals(unit)){
+			unit="null";
+		}
+		redisTemplate.opsForValue().set("shlj_daily_augs", startTime+","+endTime+","+area+","+unit);
+		redisTemplate.opsForValue().set("shlj_daily_count", total);
+		redisTemplate.opsForValue().set("shlj_daily_in", in);
+		redisTemplate.opsForValue().set("shlj_daily_inNum", inNum);
+		redisTemplate.opsForValue().set("shlj_daily_out", out);
+		redisTemplate.opsForValue().set("shlj_daily_outNum", outNum);
+		return ResultUtils.success(res);
+	}
+
+	// 打印excel服务
+	@ResponseBody
+	@RequestMapping(value = "/exportDaily")
+	public Result printAll(HttpServletRequest request, HttpServletResponse response) {
+
+		String fileName = "FactoryDailyDetails_" + System.currentTimeMillis() + ".xls";
+		String aug = (String) redisTemplate.opsForValue().get("shlj_daily_augs");
+		String startTime = aug.split(",")[0];
+		String endTime = aug.split(",")[1];
+		String area = aug.split(",")[2].equals("null")?null:aug.split(",")[2];
+		String unit = aug.split(",")[3].equals("null")?null:aug.split(",")[3];
+		List<Czjl> totalList  = kwfService.getAllList(startTime,endTime, area, unit);
+		Integer in = (Integer) redisTemplate.opsForValue().get("shlj_daily_in");
+		Double inNum = (Double) redisTemplate.opsForValue().get("shlj_daily_inNum");
+		Integer out = (Integer) redisTemplate.opsForValue().get("shlj_daily_out");
+		Double outNum = (Double) redisTemplate.opsForValue().get("shlj_daily_outNum");
+		Integer count = (Integer) redisTemplate.opsForValue().get("shlj_daily_count");
+		String time = (String) redisTemplate.opsForValue().get("shlj_daily_time");
+
+		try {
+			fileName = new String(fileName.getBytes(), "ISO8859-1");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		response.setContentType("application/octet-stream;charset=ISO8859-1");
+		response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+		response.addHeader("Pargam", "no-cache");
+		response.addHeader("Cache-Control", "no-cache");
+		// 这里名字取复杂一点,因为可能有会多报表,避免key值重复
+//		List<Czjl> list = (List) redisTemplate.opsForValue().get("shlj_daily_totalList");
+		
+		if(totalList.size()<1){
+			return ResultUtils.success(new HashMap<>());
+		}
+//		Comparator<Czjl> c = (o,p) -> o.getHandleunit().compareTo(p.getHandleunit());
+//		totalList.sort(c);
+		for (Czjl czjl : totalList) {
+			String pro = (String) czjl.getProductinorout();
+			if ("1".equals(pro)) {
+				pro = "进";
+			} else {
+				pro = "出";
+			}
+			czjl.setProductinorout(pro);
+		}
+		ExportofYJTJ(request, response,time, totalList, count, in, inNum, out, outNum);
+		return ResultUtils.success("下载成功");
+	}
+	
+	
+
+	/**
+	 * 导出excel
+	 * 
+	 * @param request
+	 * @param response
+	 * @param jsonArray
+	 * @param list
+	 * @param count
+	 * @param in
+	 * @param inNum
+	 * @param out
+	 * @param outNum
+	 */
+	public static void ExportofYJTJ(HttpServletRequest request, HttpServletResponse response,
+			String time, List<Czjl> list, Integer count, Integer in, Double inNum,
+			Integer out, Double outNum) {
+
+		try {
+			// OutputStream os = new FileOutputStream(filePath);
+			OutputStream os = response.getOutputStream();
+			HSSFWorkbook wb = new HSSFWorkbook();
+			// count ;//总数
+			int page_size = 50;// 定义每页数据数量
+			// 总数量除以每页显示条数等于页数
+			int export_times = count % page_size > 0 ? count / page_size + 1 : count / page_size;
+			for (int m = 1; m <= export_times; m++) {
+				HSSFSheet sheet = wb.createSheet("HouseholdWasteDetails" + m);
+				sheet.setDefaultColumnWidth(15);
+				HSSFRow row1 = sheet.createRow(0);
+				HSSFCell cell = row1.createCell(0);
+				// 加载单元格样式
+				// 1.设置字体
+				HSSFFont font = wb.createFont();
+				font.setFontName("黑体");
+				font.setFontHeightInPoints((short) 12);
+				// 2.设置居中
+				HSSFCellStyle style = wb.createCellStyle();
+				style.setFont(font);
+				style.setAlignment(HorizontalAlignment.CENTER); // 创建一个居中格式
+				cell.setCellStyle(style);
+				cell.setCellValue(time + "统计");
+
+				HSSFRow row_two = sheet.createRow(1);
+				HSSFCell cell2 = row_two.createCell(0);
+				cell2.setCellValue("进厂量(吨):" + inNum + "   进厂车次:" + in + "    出厂量(吨):" + outNum + "    出厂车次:" + out);
+				cell2.setCellStyle(style);
+
+				// 生成第一行
+				HSSFRow row_title = sheet.createRow(2);
+				// 第四步，创建单元格，并设置值表头 设置表头居中
+
+				// 标题
+				CellRangeAddress callRangeAddress31 = new CellRangeAddress(0, 0, 0, 10);// 起始行,结束行,起始列,结束列
+				CellRangeAddress callRangeAddress32 = new CellRangeAddress(1, 1, 0, 10);// 起始行,结束行,起始列,结束列
+				// CellRangeAddress callRangeAddress33 = new
+				// CellRangeAddress(3,4,2,2);//起始行,结束行,起始列,结束列
+				// CellRangeAddress callRangeAddress34 = new
+				// CellRangeAddress(3,3,3,4);//起始行,结束行,起始列,结束列
+				// CellRangeAddress callRangeAddress35 = new
+				// CellRangeAddress(3,4,5,5);//起始行,结束行,起始列,结束列
+				// CellRangeAddress callRangeAddress36 = new
+				// CellRangeAddress(3,4,6,6);//起始行,结束行,起始列,结束列
+				// CellRangeAddress callRangeAddress37 = new
+				// CellRangeAddress(3,4,7,7);//起始行,结束行,起始列,结束列
+
+				sheet.addMergedRegion(callRangeAddress31);
+				sheet.addMergedRegion(callRangeAddress32);
+				// sheet.addMergedRegion(callRangeAddress33);
+				// sheet.addMergedRegion(callRangeAddress34);
+				// sheet.addMergedRegion(callRangeAddress35);
+				// sheet.addMergedRegion(callRangeAddress36);
+				// sheet.addMergedRegion(callRangeAddress37);
+
+				row_title.createCell(0).setCellValue("序号");
+				row_title.createCell(1).setCellValue("一次称重时间");
+				row_title.createCell(2).setCellValue("二次称重时间");
+				row_title.createCell(3).setCellValue("车牌号");
+				row_title.createCell(4).setCellValue("毛重(吨)");
+				row_title.createCell(5).setCellValue("皮重(吨)");
+				row_title.createCell(6).setCellValue("净重(吨)");
+				row_title.createCell(7).setCellValue("运输物料");
+				row_title.createCell(8).setCellValue("所属区域");
+				row_title.createCell(9).setCellValue("运输单位");
+				row_title.createCell(10).setCellValue("处置单位");
+				row_title.createCell(11).setCellValue("货物进与出");
+				if (m == export_times) {
+					int k = 0;
+					for (int i = (m - 1) * page_size; i < count; i++) {
+						Czjl bean = list.get(i);
+						HSSFRow row = sheet.createRow(k + 3);
+						row.createCell(0).setCellValue(i + 1 + "");
+						row.createCell(1).setCellValue(bean.getTaredatetime());
+						row.createCell(2).setCellValue(bean.getGrossdatetime());
+						row.createCell(3).setCellValue((String) bean.getCarno());
+						row.createCell(4).setCellValue((String) bean.getTareweight());
+						row.createCell(5).setCellValue((String) bean.getGrossweight());
+						row.createCell(6).setCellValue((String) bean.getNetweight());
+						row.createCell(7).setCellValue((String) bean.getProductname());
+						row.createCell(8).setCellValue((String) bean.getArea());
+						row.createCell(9).setCellValue((String) bean.getTransportunit());
+						row.createCell(10).setCellValue((String) bean.getHandleunit());
+						row.createCell(11).setCellValue((String) bean.getProductinorout());
+						k++;
+
+					}
+				} else {
+					int k = 0;
+					for (int i = (m - 1) * page_size; i < m * page_size; i++) {
+						// com.alibaba.fastjson.JSONObject bean=
+						// jsonArray.getJSONObject(i);
+
+						Czjl bean = list.get(i);
+						HSSFRow row = sheet.createRow(k + 3);
+						row.createCell(0).setCellValue(i + 1);
+						row.createCell(1).setCellValue(bean.getTaredatetime());
+						row.createCell(2).setCellValue(bean.getGrossdatetime());
+						row.createCell(3).setCellValue((String) bean.getCarno());
+						row.createCell(4).setCellValue((String) bean.getTareweight());
+						row.createCell(5).setCellValue((String) bean.getGrossweight());
+						row.createCell(6).setCellValue((String) bean.getNetweight());
+						row.createCell(7).setCellValue((String) bean.getProductname());
+						row.createCell(8).setCellValue((String) bean.getArea());
+						row.createCell(9).setCellValue((String) bean.getTransportunit());
+						row.createCell(10).setCellValue((String) bean.getHandleunit());
+						row.createCell(11).setCellValue((String) bean.getProductinorout());
+						k++;
+
+					}
+				}
+			}
+			response.flushBuffer();
+			wb.write(os);
+			wb.close();
+			os.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+}

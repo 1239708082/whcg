@@ -1,0 +1,23 @@
+package com.ltsk.whcg.zhjg.mapper;
+
+import com.ltsk.whcg.entity.Server;
+import com.ltsk.whcg.entity.ServerProcess;
+import org.apache.ibatis.annotations.*;
+
+import java.util.List;
+
+@Mapper
+public interface ServerMapper {
+
+    @Update("update ZHJGINFO.SYS_SERVER_PROCESS t set state=#{state} where id=#{id}")
+    public Integer sh(@Param("state") String state, @Param("id") String id);
+
+    @Select("select t.id,username,fwname,chinesename,inserttime from ZHJGINFO.SYS_SERVER_PROCESS t join SYS_SERVER s on t.fwname=s.name where t.state=0")
+    public List<ServerProcess> findSh();
+
+    @Select("select username,fwname,inserttime,url,param,requesttype,type,chinesename from SYS_SERVER_PROCESS p join SYS_SERVER s on p.fwname=s.name where state=2 and username=#{username}")
+    public List<Server> getServerList(@Param("username") String username);
+
+    @Insert("insert into SYS_SERVER_PROCESS(id,username,fwname,state,inserttime) values(#{id},#{username},#{fwname},#{state},sysdate)")
+    public Integer registerServer(@Param("id") String id, @Param("username") String username, @Param("fwname") String fwname, @Param("state") String state);
+}

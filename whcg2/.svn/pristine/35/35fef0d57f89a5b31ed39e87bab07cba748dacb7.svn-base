@@ -1,0 +1,71 @@
+package com.ltsk.whcg.listener;
+
+import com.ltsk.whcg.dataPushFactory.SanitationlPushVerticle;
+import com.ltsk.whcg.utils.PushEnum;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServer;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.PermittedOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+
+@WebListener
+@Slf4j
+public class SanitationlPushLstener implements ServletContextListener {
+
+    public static Vertx vertx;
+
+
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+        vertx = Vertx.vertx();
+        Router router = Router.router(vertx);
+        SockJSHandlerOptions options = new SockJSHandlerOptions().setHeartbeatInterval(60000);
+        SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
+        BridgeOptions bridgeOptions = new BridgeOptions();
+        //可疑工地、消纳点
+        bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("suspic"));
+        //生活垃圾前七天处理量
+        bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("garbageweek"));
+        //生活垃圾各区实时进场量
+        bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("pregarbage"));
+        //生活垃圾当日处理总量
+        //bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("sumGarbage"));
+        //餐饮油烟报警
+        bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("pretampblack"));
+        //餐厨垃圾前七天处理量
+        bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("ccljweightweek"));
+        //餐厨垃圾各区实时进场量
+        bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("ccljweightnow"));
+        //餐厨垃圾当日进场量
+        //bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("ccljweightsum"));
+        router.route("/Eventbus/*").handler(sockJSHandler.bridge(bridgeOptions, event -> {
+            PushEnum.judge(log,event.type());
+            event.complete(true);
+        }));
+        router.route().handler(StaticHandler.create());
+        HttpServer server = vertx.createHttpServer();
+        server.requestHandler(router::accept).listen(18086, res -> {
+            if (res.succeeded()) {
+                log.info("环卫推送服务成功开始！");
+            } else {
+                log.info("环卫推送服务开启失败！");
+            }
+        });
+        vertx.deployVerticle(SanitationlPushVerticle.class.getName());
+        vertx.sharedData().getLocalMap("sanitationl").put("sanitationl", 0);
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+
+    }
+
+}

@@ -1,0 +1,30 @@
+package com.ltsk.whcg.controller;
+
+import com.ltsk.whcg.service.IndexService;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+import com.ltsk.whcg.listener.IndexListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * 首页数据初始化
+ */
+@RestController
+public class IndexController {
+
+    @Autowired
+    private IndexService indexService;
+
+    @RequestMapping("indexInit")
+    public Result init(@RequestParam(value="xzqh")String xzqh){
+        if(IndexListener.INDEX == null|| IndexListener.INDEX.size()==0){
+            return ResultUtils.success(indexService.getIndex(xzqh));
+        }
+        return ResultUtils.success( IndexListener.INDEX.get("index_"+xzqh));
+    }
+}

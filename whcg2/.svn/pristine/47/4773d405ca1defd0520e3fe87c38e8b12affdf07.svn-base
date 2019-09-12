@@ -1,0 +1,134 @@
+package com.ltsk.whcg.dataPushFactory;
+
+import com.ltsk.whcg.listener.MunicipalListener;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
+@Slf4j
+public class MunicipalPushVerticle extends AbstractVerticle {
+
+	public static HashMap<String, Object> totalMap = new HashMap<>();
+	public static HashMap<String, Object> warningMap = new HashMap<>();
+	public static HashMap<String, Object> areaMap = new HashMap<>();
+	public static HashMap<String, Object> bridgeMap = new HashMap<>();
+
+	SimpleDateFormat tdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	SimpleDateFormat udf = new SimpleDateFormat("yyyy/MM/dd");
+	private long stime;
+	private long etime;
+
+	@Override
+	public void start() {
+		vertx.setPeriodic(30000, id -> {
+			LocalMap<String, Integer> municipal = vertx.sharedData().getLocalMap("municipal");
+			// 0表示没有worker在工作
+			if (municipal.get("municipal") == 0) {
+				vertx.executeBlocking(future -> {
+					try {
+						vertx.sharedData().getLocalMap("municipal").put("municipal", 1);
+						stime = Calendar.getInstance().getTime().getTime() / 1000;
+						JsonObject result = new JsonObject();
+						// 今日数据
+						JsonObject total = MunicipalListener.totalData;
+						result.put("total", total);
+						// //一周数据
+						// JsonObject week = MunicipalListener.weekData;
+						// result.put("week", week);
+						// 警告指数
+						JsonObject warning = MunicipalListener.warningData;
+						result.put("warning", warning);
+
+						// //桥梁病害处理状态
+						JsonObject area = MunicipalListener.areaData;
+						result.put("area", area);
+						// 桥梁病害
+						JsonObject bridge = MunicipalListener.bridgeData;
+						result.put("bridge", bridge);
+						future.complete(result);
+					} catch (Exception e) {
+						e.printStackTrace();
+						future.fail(e);
+					}
+				}, res -> {
+					if (res.succeeded()) {
+						JsonObject obj = (JsonObject) res.result();
+						// 发布今日站点情况汇总
+						JsonObject total = obj.getJsonObject("total");
+						Map<String, String> xzqhMap = XZQHListener.XZQHMap;
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "totalData_" + xzqh;
+							JsonObject js = total.getJsonObject(key);
+							if (totalMap.get(key) == null) {
+								totalMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!totalMap.get(key).equals(js)) {
+								totalMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+						// 发布各区警告指数
+						JsonObject warning = obj.getJsonObject("warning");
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "warningData_" + xzqh;
+							JsonArray js = warning.getJsonArray(key);
+							if (warningMap.get(key) == null) {
+								warningMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!warningMap.get(key).equals(js)) {
+								warningMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+
+						}
+						// 发布桥梁病害处理数量
+						JsonObject area = obj.getJsonObject("area");
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "areaData_" + xzqh;
+							JsonArray js = area.getJsonArray(key);
+							if (areaMap.get(key) == null) {
+								areaMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!areaMap.get(key).equals(js)) {
+								areaMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+						// 发布桥梁病害
+						JsonObject bridge = obj.getJsonObject("bridge");
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "bridgeData_" + xzqh;
+							JsonArray js = bridge.getJsonArray(key);
+							if (bridgeMap.get(key) == null) {
+								bridgeMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!bridgeMap.get(key).equals(js)) {
+								bridgeMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+						etime = Calendar.getInstance().getTime().getTime() / 1000;
+						log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送完毕    耗时    " + (etime - stime)
+								+ "  秒   !");
+						vertx.sharedData().getLocalMap("municipal").put("municipal", 0);
+					}
+					if (res.failed()) {
+						vertx.sharedData().getLocalMap("municipal").put("municipal", 0);
+						log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送失败    耗时    " + (etime - stime)
+								+ "  秒   !");
+					}
+				});
+			}
+		});
+	}
+
+}

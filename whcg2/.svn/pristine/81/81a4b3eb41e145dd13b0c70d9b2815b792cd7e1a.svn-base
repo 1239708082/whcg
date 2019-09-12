@@ -1,0 +1,72 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.KitchenWasteCarService;
+import com.ltsk.whcg.utils.PositionUtil;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.KitchenWasteCarMapper;
+import com.ltsk.whcg.entity.Ccsyc;
+import com.ltsk.whcg.entity.Gps;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class KitchenWasteCarServiceImpl implements KitchenWasteCarService {
+
+    @Autowired
+    private KitchenWasteCarMapper kitchenWasteCarMapper;
+    @Override
+    public List<Ccsyc> getAll(String xzqh) {
+    	String xzqh_name = XZQHListener.XZQHMap.get(xzqh);
+        try {
+        	if("武汉经济技术开发区".equals(xzqh_name))
+        		xzqh_name="武汉开发区";
+    		if("武汉东湖新技术开发区".equals(xzqh_name))
+    			xzqh_name="东湖高新区";
+    		if("东湖生态旅游风景区管委会".equals(xzqh_name))
+    			xzqh_name="东湖风景区";
+        	if(("全市").equals(xzqh_name)){
+        		xzqh_name=null;
+        	}
+        	List<Ccsyc> all = kitchenWasteCarMapper.getAll(xzqh_name);
+        	if(all.size()<1)
+        		return new ArrayList<>();
+        	for (Ccsyc ccsyc : all) {
+				Gps xy84 = PositionUtil.bd09_To_Gps84(Double.parseDouble(ccsyc.getLatitude()), Double.parseDouble(ccsyc.getLongitude()));
+				ccsyc.setGdx(xy84.getWgLon()+"");
+				ccsyc.setGdy(xy84.getWgLat()+"");
+        	}
+			return all;
+		} catch (Exception e) {
+			log.error("餐厨垃圾车信息查询失败!!");
+			return new ArrayList<>();
+		}
+    }
+	@Override
+	public Integer get_sum(String xzqh) {
+		String xzqh_str = XZQHListener.XZQHMap.get(xzqh);
+		try{
+			if("武汉经济技术开发区".equals(xzqh_str))
+				xzqh_str="武汉开发区";
+			if("武汉东湖新技术开发区".equals(xzqh_str))
+				xzqh_str="东湖高新区";
+			if("东湖生态旅游风景区管委会".equals(xzqh_str))
+				xzqh_str="东湖风景区";
+			if("全市".equals(xzqh_str)){
+				xzqh_str=null;
+			}
+			Integer get_sum = kitchenWasteCarMapper.get_sum(xzqh_str);
+			return get_sum;
+		}catch (Exception e) {
+			log.error("查询所有餐厨垃圾车总条数失败");
+			return 0;
+		}
+	}
+}

@@ -1,0 +1,68 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.UnloadService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.UnloadMapper;
+import com.ltsk.whcg.entity.Unload;
+import com.ltsk.whcg.entity.Zhqtxnd;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class UnloadServiceImpl implements UnloadService {
+
+	@Autowired
+	private UnloadMapper unloadMapper;
+
+	@Override
+	public List<Unload> getAll() {
+		try {
+			return unloadMapper.getAll();
+		} catch (Exception e) {
+			log.error("获得所有消纳点失败");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<Zhqtxnd> getXnd(String xzqh) {
+		try {
+			String xzqh_str = XZQHListener.XZQHMap.get(xzqh);
+			List<Zhqtxnd> xnd = new ArrayList<>();
+			if (xzqh_str.equals("武汉经济技术开发区"))
+				xzqh_str = "经济开发区";
+			if (xzqh_str.equals("全市")) {
+				xnd = unloadMapper.getXnd(null);
+			} else {
+				xnd = unloadMapper.getXnd("%" + xzqh_str + "%");
+			}
+			String x = "";
+			String y = "";
+			for (Zhqtxnd zhqtxnd : xnd) {
+				List xy_list = new ArrayList();
+				for (int i = 0; i < zhqtxnd.getMapx().split(",").length; i++) {
+					List<Double> xy = new ArrayList<>();
+					x = zhqtxnd.getMapx().split(",")[i];
+					y = zhqtxnd.getMapy().split(",")[i];
+					xy.add(Double.parseDouble(x));
+					xy.add(Double.parseDouble(y));
+					xy_list.add(xy);
+				}
+				zhqtxnd.setXy(xy_list);
+			}
+			return xnd;
+
+		} catch (Exception e) {
+			log.error("获得所有消纳点失败");
+		}
+		return null;
+	}
+}

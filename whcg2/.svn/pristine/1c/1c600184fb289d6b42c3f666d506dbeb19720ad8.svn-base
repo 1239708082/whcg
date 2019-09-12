@@ -1,0 +1,25 @@
+package com.ltsk.whcg.gas.mapper;
+
+import com.ltsk.whcg.entity.WarningList;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface WarningListMapper {
+
+    @Select("select * from [rq].[dbo].[WarningList] where DateDiff(dd,OccurDate,getdate())= 0 and Status = 1 ORDER BY OccurDate desc")
+    public List<WarningList> getAll();
+
+//    @Select("SELECT count(*) num FROM [rq].[dbo].[WarningList] where DateDiff(dd,OccurDate,getdate())= 0 and Status = 1 ")
+    @Select("<script> " +  
+            "SELECT count(*)  num " +  
+            "from [rq].[dbo].[WarningList]    " + 
+            "where DateDiff(dd,OccurDate,getdate())= 0 and Status = 1 "+
+            " <if test='xzqhname != null'>and Areaname =#{xzqhname}</if> " +  
+            " </script> ") 
+    public int getGasWarning(@Param("xzqhname") String xzqh);
+}

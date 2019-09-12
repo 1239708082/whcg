@@ -1,0 +1,285 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.KitchenWasteFactoryService;
+import com.ltsk.whcg.utils.DateTime;
+import com.ltsk.whcg.utils.PositionUtil;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.KitchenWasteFactoryMapper;
+import com.ltsk.whcg.entity.Ccljc;
+import com.ltsk.whcg.entity.Czjl;
+import com.ltsk.whcg.entity.GarbageNow;
+import com.ltsk.whcg.entity.Gps;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class KitchenWasteFactoryServiceImpl implements KitchenWasteFactoryService {
+
+	@Autowired
+	private KitchenWasteFactoryMapper kitchenWasteFactoryMapper;
+
+	@Override
+	public List<Ccljc> getAll() {
+		try {
+			List<Ccljc> all = kitchenWasteFactoryMapper.getAll();
+			if(all.size()<1)
+				return new ArrayList<>();
+			for (Ccljc ccljc : all) {
+//				Gps xy84 = PositionUtil.gcj_To_Gps84(Double.parseDouble(ccljc.getLatitute()+""), Double.parseDouble(ccljc.getLongtitute()+""));
+//				ccljc.setLat(xy84.getWgLat());
+//				ccljc.setLon(xy84.getWgLon());
+				
+				Gps gdxy = PositionUtil.bd09_To_Gcj02(Double.parseDouble(ccljc.getLatitute()+""), Double.parseDouble(ccljc.getLongtitute()+""));
+				ccljc.setLat(gdxy.getWgLat());
+				ccljc.setLon(gdxy.getWgLon());
+			}
+			return all;
+		} catch (Exception e) {
+			log.error("获得所有餐厨垃圾厂失败");
+			return new ArrayList<>();
+		}
+	}
+	
+	@Override
+	public List<Czjl> getAllList(String startTime, String endTime,String area, String unit) {
+		try {
+			if (startTime==null||"".equals(startTime)||"null".equals(startTime)) {
+				startTime = DateTime.getTodayTime()+" 00:00:00";
+			}
+			if (endTime==null||"".equals(endTime)||"null".equals(endTime)) {
+				endTime = DateTime.getCurrentTime();
+			}
+
+			if (area==null||"".equals(area)||"null".equals(area)) {
+				area= null;
+			}
+			if (unit==null||"".equals(unit)||"null".equals(unit)) {
+				unit= null;
+			}
+			
+
+			return kitchenWasteFactoryMapper.getAllList(startTime,endTime, area, unit);
+		} catch (Exception e) {
+			log.error("获得今日垃圾报表失败");
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
+
+	}
+
+	@Override
+	public List<Czjl> getAllToday(Integer endNum,Integer startNum,String startTime,String endTime, String area, String unit) {
+		try {
+			if (startTime==null||"".equals(startTime)||"null".equals(startTime)) {
+				startTime = DateTime.getTodayTime()+" 00:00:00";
+			}
+			if (endTime==null||"".equals(endTime)||"null".equals(endTime)) {
+				endTime = DateTime.getCurrentTime();
+			}
+
+			if (area==null||"".equals(area)||"null".equals(area)) {
+				area= null;
+			}
+			if (unit==null||"".equals(unit)||"null".equals(unit)) {
+				unit= null;
+			}
+			
+
+			return kitchenWasteFactoryMapper.getAllToday(endNum,startNum,startTime,endTime, area, unit);
+		} catch (Exception e) {
+			log.error("获得今日垃圾报表失败");
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
+
+	}
+
+	@Override
+	public Integer getCountToday(String startTime,String endTime, String area, String unit) {
+
+		try {
+			if (startTime==null||"".equals(startTime)||"null".equals(startTime)) {
+				startTime = DateTime.getTodayTime()+" 00:00:00";
+			}
+			if (endTime==null||"".equals(endTime)||"null".equals(endTime)) {
+				endTime = DateTime.getCurrentTime();
+			}
+
+			if (area==null||"".equals(area)||"null".equals(area)) {
+				area= null;
+			}
+			if (unit==null||"".equals(unit)||"null".equals(unit)) {
+				unit= null;
+			}
+			if (kitchenWasteFactoryMapper.getCountToday(startTime,endTime,area,unit) == null) {
+
+				return 0;
+			} else {
+				return kitchenWasteFactoryMapper.getCountToday(startTime,endTime,area,unit);
+			}
+		} catch (Exception e) {
+			log.error("获得今日垃圾报表失败");
+			return 0;
+		}
+	}
+
+	@Override
+	public Integer getIn(String startTime,String endTime, String area, String unit) {
+
+		try {
+			if (startTime==null||"".equals(startTime)||"null".equals(startTime)) {
+				startTime = DateTime.getTodayTime()+" 00:00:00";
+			}
+			if (endTime==null||"".equals(endTime)||"null".equals(endTime)) {
+				endTime = DateTime.getCurrentTime();
+			}
+
+			if (area==null||"".equals(area)||"null".equals(area)) {
+				area= null;
+			}
+			if (unit==null||"".equals(unit)||"null".equals(unit)) {
+				unit= null;
+			}
+			if (kitchenWasteFactoryMapper.getIn(startTime,endTime,area,unit) == null) {
+
+				return 0;
+			} else {
+				
+				return kitchenWasteFactoryMapper.getIn(startTime,endTime,area,unit);
+			}
+		} catch (Exception e) {
+			log.error("获得今日垃圾报表失败");
+			return 0;
+		}
+	}
+
+	@Override
+	public Double getInNum(String startTime,String endTime,String area,String unit) {
+		
+		try {
+			if (startTime==null||"".equals(startTime)||"null".equals(startTime)) {
+				startTime = DateTime.getTodayTime()+" 00:00:00";
+			}
+			if (endTime==null||"".equals(endTime)||"null".equals(endTime)) {
+				endTime = DateTime.getCurrentTime();
+			}
+
+			if (area==null||"".equals(area)||"null".equals(area)) {
+				area= null;
+			}
+			if (unit==null||"".equals(unit)||"null".equals(unit)) {
+				unit= null;
+			}
+			if (kitchenWasteFactoryMapper.getInNum(startTime,endTime,area,unit) == null) {
+				return 0.0;
+			} else {
+				return kitchenWasteFactoryMapper.getInNum(startTime,endTime,area,unit);
+				
+			}
+		} catch (Exception e) {
+			log.error("获得今日垃圾报表失败");
+			return 0.0;
+		}
+	}
+
+	@Override
+	public Integer getOut(String startTime,String endTime, String area, String unit) {
+
+		try {
+			if (startTime==null||"".equals(startTime)||"null".equals(startTime)) {
+				startTime = DateTime.getTodayTime()+" 00:00:00";
+			}
+			if (endTime==null||"".equals(endTime)||"null".equals(endTime)) {
+				endTime = DateTime.getCurrentTime();
+			}
+
+			if (area==null||"".equals(area)||"null".equals(area)) {
+				area= null;
+			}
+			if (unit==null||"".equals(unit)||"null".equals(unit)) {
+				unit= null;
+			}
+			if (kitchenWasteFactoryMapper.getOut(startTime,endTime,area,unit) == null) {
+
+				return 0;
+			} else {
+				return kitchenWasteFactoryMapper.getOut(startTime,endTime,area,unit);
+				
+			}
+		} catch (Exception e) {
+			log.error("获得今日垃圾报表失败");
+			return 0;
+		}
+	}
+
+	@Override
+	public Double getOutNum(String startTime,String endTime,String area,String unit) {
+
+		try {
+			if (startTime==null||"".equals(startTime)||"null".equals(startTime)) {
+				startTime = DateTime.getTodayTime()+" 00:00:00";
+			}
+			if (endTime==null||"".equals(endTime)||"null".equals(endTime)) {
+				endTime = DateTime.getCurrentTime();
+			}
+			if (area==null||"".equals(area)||"null".equals(area)) {
+				area= null;
+			}
+			if (unit==null||"".equals(unit)||"null".equals(unit)) {
+				unit= null;
+			}
+			if (kitchenWasteFactoryMapper.getOutNum(startTime,endTime,area,unit) == null) {
+
+				return 0.0;
+			} else {
+				return kitchenWasteFactoryMapper.getOutNum(startTime,endTime,area,unit);
+			}
+		} catch (Exception e) {
+			log.error("获得今日垃圾报表失败");
+			return 0.0;
+		}
+	}
+
+	@Override
+	public List<String> getUnit() {
+		
+		try {
+			return kitchenWasteFactoryMapper.getUnit();
+		} catch (Exception e) {
+			log.error("获得垃圾处理厂信息失败！");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<String> getArea() {
+		try {
+			return kitchenWasteFactoryMapper.getArea();
+		} catch (Exception e) {
+			log.error("获得区域信息失败！");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<GarbageNow> getAllByArea(String startTime, String endTime) {
+		try {
+			List<GarbageNow> res = kitchenWasteFactoryMapper.getAllByArea(startTime,endTime);
+			if(res.size()<1){
+				return new ArrayList<GarbageNow>();
+			}
+			return res;
+		} catch (Exception e) {
+			log.error("获取指定时间内生活垃圾量分区查询失败");
+			return new ArrayList<GarbageNow>();
+		}
+		
+	}
+}

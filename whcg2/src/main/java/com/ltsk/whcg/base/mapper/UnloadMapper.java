@@ -1,0 +1,27 @@
+package com.ltsk.whcg.base.mapper;
+
+import com.ltsk.whcg.entity.Unload;
+import com.ltsk.whcg.entity.Zhqtxnd;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface UnloadMapper {
+
+    @Select("select t.* from UNLOAD  t where t.updatetime =  ( select max(updatetime) from UNLOAD  )  and gdx   like '11_.%' and gdy  like '30%'")
+    List<Unload> getAll();
+    
+    @Select({"<script>",
+        "SELECT * from ZHQTXND",
+        "WHERE updatetime >= trunc(sysdate) ",
+        "<when test='xzqh!=null'>",
+        "AND addr like #{xzqh}",
+        "</when>",
+        "order by updatetime desc",
+        "</script>"})
+    public List<Zhqtxnd> getXnd(@Param("xzqh")String xzqh);
+}

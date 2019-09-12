@@ -1,0 +1,131 @@
+package com.ltsk.whcg.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ltsk.whcg.entity.Server;
+import com.ltsk.whcg.service.ServiceManagementService;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+import com.ltsk.whcg.zhjg.mapper.ServiceManageMapper;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+@RestController
+public class ServiceManagementController {
+	@Autowired
+	private ServiceManageMapper mapper;
+    @Autowired	
+	private ServiceManagementService serviceManagementService;
+	
+//	查询所有服务信息
+	@RequestMapping("servicename")
+	public Result listServiceName(HttpSession session) {
+		List<Server> list=new ArrayList<Server>();
+		Object attribute = session.getAttribute("user");
+		JSONObject fromObject = JSONObject.fromObject(attribute);
+		String username = (String)fromObject.get("username");
+//		String username="jaq123";
+		list = mapper.listAllServiceName();
+		JSONArray jsonArray = JSONArray.fromObject(list);
+		JSONArray jsonArray2 = new JSONArray();
+		
+		String fwname = mapper.getFwname(username);
+		int a=1;
+		if (fwname==null||fwname.equals("")) {
+//			循环遍历服务信息，添加使用状态
+			for (Object object : jsonArray) {
+				JSONObject jsonObject = JSONObject.fromObject(object);
+				jsonObject.put("id",a);
+			    jsonObject.put("state", "0");
+				jsonArray2.add(jsonObject);
+				a++;
+			}
+		}else {
+			if ("all".equals(fwname)) {
+//				循环遍历服务信息，添加使用状态
+				for (Object object : jsonArray) {
+					JSONObject jsonObject = JSONObject.fromObject(object);
+					jsonObject.put("id",a);
+				    jsonObject.put("state", "1");
+					jsonArray2.add(jsonObject);
+					a++;
+				}
+			}else {
+				String[] servernames = fwname.split(",");
+				for (Object object : jsonArray) {
+					JSONObject jsonObject = JSONObject.fromObject(object);
+					jsonObject.put("id",a);
+				    jsonObject.put("state", "0");
+					for (int i = 0; i < servernames.length; i++) {
+						if (jsonObject.getString("name").equals(servernames[i])) {
+							jsonObject.put("state","1");
+							break;
+						}
+					}
+					jsonArray2.add(jsonObject);
+					a++;
+				}
+			}
+		}
+		
+		Result success = ResultUtils.success(jsonArray2);
+		return success;
+	} 
+	
+	
+//  查询对应服务地址、参数、调用说明
+//	@RequestMapping("serviceinfo")
+//	public Result getServiceInfo(@RequestParam String id) {
+//		Server server = mapper.getServiceInfo(id);
+//		if (server!=null) {
+//			JSONObject fromObject = JSONObject.fromObject(server);
+//			Result success = ResultUtils.success(fromObject);
+//			return success;
+//		}
+//        Result error = ResultUtils.error("没有此服务详情");
+//        return error;
+//	}
+	
+//  查询所有服务使用频次统计情况(时间段)
+	@RequestMapping("servicestatistics")
+	public Result listUseServiceStatistics() {
+		List<String> serverCountSelrvice = serviceManagementService.getServerCountSelrvice();
+		JSONArray jsonArray = JSONArray.fromObject(serverCountSelrvice);
+		Result success = ResultUtils.success(jsonArray);
+		return success;
+	}
+
+//	服务类型
+	@RequestMapping("servicestatistics1")
+	public Result listUseServiceStatistics1() {
+		List<Map<String, Integer>> list = serviceManagementService.getServerCountByServerType();
+		JSONArray jsonArray = JSONArray.fromObject(list);
+		Result success = ResultUtils.success(jsonArray);
+		return success;
+	}
+	
+//	行政区划
+	@RequestMapping("servicestatistics2")
+	public Result listUseServiceStatistics2() {
+		List<Map<String, Integer>> list = serviceManagementService.getServerCountByUserType();
+		JSONArray jsonArray = JSONArray.fromObject(list);
+		Result success = ResultUtils.success(jsonArray);
+		return success;
+	}
+}

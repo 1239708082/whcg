@@ -1,0 +1,113 @@
+package com.ltsk.whcg.service.impl;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.ltsk.whcg.entity.Gps;
+import com.ltsk.whcg.service.UploadFileService;
+import com.ltsk.whcg.utils.DateTime;
+import com.ltsk.whcg.utils.FileUtils;
+import com.ltsk.whcg.utils.PositionUtil;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+@Service
+public class  UploadFileServiceImpl implements UploadFileService{
+
+	@Override
+	public Result upload(MultipartFile file) {
+        String readPath = "D:/fileServer/excelFile";
+		
+		String  uuid = DateTime.getUuid();
+//        String imgurl += serverPath + "/" + uuid + file.getOriginalFilename() ;
+		
+        FileUtils.upload(file, readPath, uuid); 
+        //调用接口
+		
+		return ResultUtils.success();
+	}
+
+	@Override
+	public Result change(MultipartFile file, String type) {
+	       
+	    try {
+	    	
+	    	String oldFile = file.getOriginalFilename();
+	        String suffix = oldFile.substring(oldFile.lastIndexOf("."));
+	        InputStream in = file.getInputStream();
+	        List<List<String>> list = null;
+	        List<List<String>> result = new ArrayList<>();
+	    	if(".xls".equals(suffix)){
+				 list = FileUtils.readXls(in);
+	    	}else if(".xlsx".equals(suffix)){
+	    		list = FileUtils.readXlsx(in);
+	    	}else{
+	    		return ResultUtils.error("只支持EXCEL(.xls和.xlsx)文件上传.");
+	    	}
+	    	result.add(list.get(0));
+	    	if("0".equals(type)){
+	    		//0代表84转高德坐标系
+	    		for (int i = 1; i < list.size(); i++) {
+					List<String> map = list.get(i);
+					Gps gps = PositionUtil.gps84_To_Gcj02(Double.parseDouble(map.get(1)), Double.parseDouble(map.get(2)));
+					map.set(1, gps.getWgLat()+"");
+					map.set(2, gps.getWgLon()+"");
+					result.add(map);
+				}
+	    	}else if("1".equals(type)){
+	    		//1代表84转百度
+	    		for (int i = 1 ;i <list.size(); i++) {
+	    			//先把坐标转为高德
+	    			List<String> map = list.get(i);
+	    			
+					Gps gps = PositionUtil.gps84_To_Gcj02(Double.parseDouble(map.get(1)), Double.parseDouble(map.get(2)));
+					gps = PositionUtil.gcj02_To_Bd09(gps.getWgLat(), gps.getWgLon());
+					map.set(1, gps.getWgLat()+"");
+	    			map.set(2, gps.getWgLon()+"");
+					result.add(map);
+	    		}
+	    		System.out.println("1 :"+result.toString());
+	    	}else if("2".equals(type)){
+	    		//2代表 84转Web 墨卡托投影坐标系.
+	    		
+	    		for (int i = 1; i < list.size(); i++) {
+	    			List<String> map = list.get(i);
+					Gps gps = PositionUtil.lonLat2Mercator(new Gps(Double.parseDouble(map.get(1)), Double.parseDouble(map.get(2))));
+	    			map.set(1, gps.getWgLat()+"");
+	    			map.set(2, gps.getWgLon()+"");
+	    			result.add(map);
+				}
+
+	    	}else{
+	    		return ResultUtils.error("不支持此类型坐标转换");
+	    	}
+	    	
+			in.close();
+			return ResultUtils.success(JSONArray.fromObject(result));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResultUtils.error("请用指定的模板来进行坐标转换操作！"+e.getMessage());		
+		}
+	}
+
+	
+	
+	
+}

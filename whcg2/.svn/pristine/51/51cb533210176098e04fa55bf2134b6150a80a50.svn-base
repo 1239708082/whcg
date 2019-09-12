@@ -1,0 +1,84 @@
+package com.ltsk.whcg.entity;
+
+public class Server {
+
+    private String id;
+    private String name;
+    private String param;
+    private String url;
+    private String requestType;
+    private String chineseName;
+    private String type;
+    private String intance;
+
+    public String getIntance() {
+		return intance;
+	}
+
+	public void setIntance(String intance) {
+		this.intance = intance;
+	}
+
+	public String getId() {
+        return id;
+    }
+
+    public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getParam() {
+        return param;
+    }
+
+    public void setParam(String param) {
+        this.param = param;
+    }
+
+
+    public String getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(String requestType) {
+        this.requestType = requestType;
+    }
+
+    public String getChineseName() {
+        return chineseName;
+    }
+
+    public void setChineseName(String chineseName) {
+        this.chineseName = chineseName;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+	@Override
+	public String toString() {
+		return "Server [id=" + id + ", name=" + name + ", param=" + param + ", url=" + url + ", requestType="
+				+ requestType + ", chineseName=" + chineseName + ", type=" + type + ", intance=" + intance + "]";
+	}
+}

@@ -1,0 +1,114 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.FumeUnitService;
+import com.ltsk.whcg.utils.DateTime;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.FumeUnitMapper;
+import com.ltsk.whcg.entity.Cyyycginfo;
+import com.ltsk.whcg.entity.LampBlack;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class FumeUnitServiceImpl implements FumeUnitService {
+
+	@Autowired
+	private FumeUnitMapper fumeUnitMapper;
+
+	@Override
+	public List<Cyyycginfo> getAll(String xzqh) {
+		String xzqh_name = XZQHListener.XZQHMap.get(xzqh);
+		try {
+			if (xzqh_name.equals("全市")) {
+				xzqh_name = null;
+			}
+			return fumeUnitMapper.getAll(xzqh_name);
+		} catch (Exception e) {
+			log.error("餐厨油烟单位信息查询失败!!");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<LampBlack> getTampblack(String xzqh) {
+
+		// 因为每个库的xzqh叫法不一样.所以根据实际库里的叫法来对应查询
+		if ("420120000000".equals(xzqh)) {
+			xzqh = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqh = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqh = "经开区";
+		} else if ("420114000000".equals(xzqh)) {
+			xzqh = "蔡甸区";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqh = null;
+		} else {
+			xzqh = XZQHListener.XZQHMap.get(xzqh);
+		}
+
+		try {
+			List<LampBlack> list = fumeUnitMapper.getTampBlackInfo(xzqh);
+			for (int i = 0; i < list.size(); i++) {
+				list.get(i).setWarningType("油烟报警");
+				list.get(i).setId(i);
+			}
+
+			return list;
+		} catch (Exception e) {
+			log.error("餐厨油烟单位信息查询失败!!");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<Map<String, Object>> getViolationNum(String xzqh) {
+		try {
+			String substring = XZQHListener.XZQHMap.get(xzqh);
+			String xzqh_str = substring.substring(0,2);
+			String table = "SSYYYSJCXX_HISTORY_"+DateTime.getYearMonth();
+			
+			List<Map<String, Object>> violationNum =new ArrayList<Map<String,Object>>();
+			if (xzqh_str.equals("全市")) {
+				violationNum = fumeUnitMapper.getViolationNum(null,table);
+			}else{
+				 violationNum = fumeUnitMapper.getViolationNum("%"+xzqh_str+"%",table);
+			}
+			List<Map<String, Object>> result = new ArrayList<>();
+			SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy_mm_dd");
+			for (int i = 0; i < 7; i++) {
+				Map<String, Object> map1 = new HashMap<>();
+				String format = simpleDateFormat.format(simpleDateFormat.parse(DateTime.timeStr(i)));
+				map1.put("alarmtime", format);
+				map1.put("num", 0);
+				result.add(map1);
+			}
+			for (Map<String, Object> map : violationNum) {
+				String str1=map.get("ALARMTIME").toString().split(" ")[0];
+				String str=str1.replaceAll("-", "_");
+				for (Map<String, Object> map2 : result) {
+					if (map2.get("alarmtime").equals(str)) {
+						map2.put("num", map.get("NUM"));
+					}
+				}
+			}
+			return result;
+		} catch (Exception e) {
+			log.error("获得餐饮油烟单位近7天违规数失败");
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+}

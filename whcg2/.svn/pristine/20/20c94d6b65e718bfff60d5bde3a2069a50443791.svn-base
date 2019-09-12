@@ -1,0 +1,214 @@
+package com.ltsk.whcg.entity;
+
+
+import java.io.Serializable;
+
+public class BridgeDefectRecord implements Serializable{
+
+	private static final long serialVersionUID = 1463708646311361048L;
+
+	private int keyid;
+
+    private String bridgename;
+
+    private String truename;
+
+    private String recordtime;
+
+    private String itemdescription;
+
+    private String recorddescription;
+
+    private String sound;
+
+    private String path;
+
+    private String weather;
+
+    private String missionlevel;
+
+    private String missiontype;
+
+    private String itemname;
+
+    private String status;
+
+    private double xlongitude;
+
+    private double ylatitude;
+
+    private String departmentname;
+
+    private String manageunit;
+
+    //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String createdtime;
+
+    public int getKeyid() {
+        return keyid;
+    }
+
+    public void setKeyid(int keyid) {
+        this.keyid = keyid;
+    }
+
+    public String getBridgename() {
+        return bridgename;
+    }
+
+    public void setBridgename(String bridgename) {
+        this.bridgename = bridgename;
+    }
+
+    public String getTruename() {
+        return truename;
+    }
+
+    public void setTruename(String truename) {
+        this.truename = truename;
+    }
+
+    public String getRecordtime() {
+        return recordtime;
+    }
+
+    public void setRecordtime(String recordtime) {
+        this.recordtime = recordtime;
+    }
+
+    public String getItemdescription() {
+        return itemdescription;
+    }
+
+    public void setItemdescription(String itemdescription) {
+        this.itemdescription = itemdescription;
+    }
+
+    public String getRecorddescription() {
+        return recorddescription;
+    }
+
+    public void setRecorddescription(String recorddescription) {
+        this.recorddescription = recorddescription;
+    }
+
+    public String getSound() {
+        return sound;
+    }
+
+    public void setSound(String sound) {
+        this.sound = sound;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getWeather() {
+        return weather;
+    }
+
+    public void setWeather(String weather) {
+        this.weather = weather;
+    }
+
+    public String getMissionlevel() {
+        return missionlevel;
+    }
+
+    public void setMissionlevel(String missionlevel) {
+        this.missionlevel = missionlevel;
+    }
+
+    public String getMissiontype() {
+        return missiontype;
+    }
+
+    public void setMissiontype(String missiontype) {
+        this.missiontype = missiontype;
+    }
+
+    public String getItemname() {
+        return itemname;
+    }
+
+    public void setItemname(String itemname) {
+        this.itemname = itemname;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public double getXlongitude() {
+        return xlongitude;
+    }
+
+    public void setXlongitude(double xlongitude) {
+        this.xlongitude = xlongitude;
+    }
+
+    public double getYlatitude() {
+        return ylatitude;
+    }
+
+    public void setYlatitude(double ylatitude) {
+        this.ylatitude = ylatitude;
+    }
+
+    public String getDepartmentname() {
+        return departmentname;
+    }
+
+    public void setDepartmentname(String departmentname) {
+        this.departmentname = departmentname;
+    }
+
+    public String getManageunit() {
+        return manageunit;
+    }
+
+    public void setManageunit(String manageunit) {
+        this.manageunit = manageunit;
+    }
+
+    public String getCreatedtime() {
+        return createdtime;
+    }
+
+    public void setCreatedtime(String createdtime) {
+        this.createdtime = createdtime;
+    }
+
+    @Override
+    public String toString() {
+        return "BridgeDefectRecord{" +
+                "keyid=" + keyid +
+                ", bridgename='" + bridgename + '\'' +
+                ", truename='" + truename + '\'' +
+                ", recordtime=" + recordtime +
+                ", itemdescription='" + itemdescription + '\'' +
+                ", recorddescription='" + recorddescription + '\'' +
+                ", sound='" + sound + '\'' +
+                ", path='" + path + '\'' +
+                ", weather='" + weather + '\'' +
+                ", missionlevel='" + missionlevel + '\'' +
+                ", missiontype='" + missiontype + '\'' +
+                ", itemname='" + itemname + '\'' +
+                ", status='" + status + '\'' +
+                ", xlongitude=" + xlongitude +
+                ", ylatitude=" + ylatitude +
+                ", departmentname='" + departmentname + '\'' +
+                ", manageunit='" + manageunit + '\'' +
+                ", createdtime=" + createdtime +
+                '}';
+    }
+}

@@ -1,0 +1,148 @@
+package com.ltsk.whcg.utils;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import com.sun.org.apache.regexp.internal.REUtil;
+//时间工具
+public class DateTime
+{
+	public static String getCurrentTime()
+	{
+		Date date=new Date();
+		SimpleDateFormat sd=new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		String currentTime=sd.format(date);
+		return currentTime;
+	}
+
+	public static String getYearMonth()
+	{
+		Date date=new Date();
+		SimpleDateFormat sd=new SimpleDateFormat("yyyy_MM");
+		String currentTime=sd.format(date);
+		return currentTime;
+	}
+	
+	public static String getYear(Date date)
+	{
+		SimpleDateFormat sd=new SimpleDateFormat("yyyy");
+		String year=sd.format(date);
+		return year;
+	}
+	
+	public static String getMonth(Date date)
+	{
+		SimpleDateFormat sd=new SimpleDateFormat("MM");
+		String month=sd.format(date);
+		return month;
+	}
+	
+	public static String getDay(Date date)
+	{
+		SimpleDateFormat sd=new SimpleDateFormat("dd");
+		String day=sd.format(date);
+		return day;
+	}
+	
+	public static String getPast24Time(String dateStirng)
+	{
+		SimpleDateFormat sd=new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		Date past24date=new Date();
+		try
+		{
+			past24date=new Date(sd.parse(dateStirng).getTime()-24*3600*1000);
+		}catch(ParseException ex)
+		{
+			ex.printStackTrace();
+		}
+		String past24String=sd.format(past24date);
+		return past24String;
+	}
+	
+	public static String getNoonNightTime(String dateStirng)
+	{
+		String dateNoonString=dateStirng.split(" ")[0]+" 00:00:00";
+		return dateNoonString;
+	}
+	
+	/*判断是否包含整月,返回包含的月份格式为2017_01;2017_02*/
+
+	public static String haveMonth(Date startDate,Date endDate){
+		String result="";
+		Calendar cl=Calendar.getInstance();
+		cl.setTime(startDate);
+		Calendar e_cl=Calendar.getInstance();
+		e_cl.setTime(endDate);
+		int e_year=e_cl.get(Calendar.YEAR);
+		int e_month=e_cl.get(Calendar.MONTH)+1;
+		int temp_year=cl.get(Calendar.YEAR);
+		int temp_month=cl.get(Calendar.MONTH)+1;
+		if(temp_month==e_month&&temp_year==e_year){
+			result=String.valueOf(temp_year)+"_"+((temp_month<10)?"0"+String.valueOf(temp_month):String.valueOf(temp_month));
+			return result;
+		}
+		while(temp_year!=e_year||temp_month!=e_month){
+			if(temp_year>=2004){
+				result=result+String.valueOf(temp_year)+"_"+((temp_month<10)?"0"+String.valueOf(temp_month):String.valueOf(temp_month))+";";
+			}
+			cl.add(Calendar.MONTH, 1);
+			temp_year=cl.get(Calendar.YEAR);
+			temp_month=cl.get(Calendar.MONTH)+1;
+		}
+		if(temp_year>=2004){
+			result=result+String.valueOf(temp_year)+"_"+((temp_month<10)?"0"+String.valueOf(temp_month):String.valueOf(temp_month))+";";
+		}
+		if(result.contains(";")){
+			result=result.substring(0,result.length()-1);
+		}
+		return result;
+	}
+
+	public static String timeStr(int num) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, -num);
+		int day = calendar.get(Calendar.DAY_OF_MONTH);
+		String dd = "";
+		if (day < 10) {
+			dd = "0"+calendar.get(Calendar.DAY_OF_MONTH);
+		}else{
+			dd = ""+calendar.get(Calendar.DAY_OF_MONTH);
+		}
+		return calendar.get(Calendar.YEAR) + "_" + (calendar.get(Calendar.MONTH) + 1) + "_" + dd;
+	}
+	public static String timeStr2(int num) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, -num);
+		int day = calendar.get(Calendar.DAY_OF_MONTH);
+		int mm = calendar.get(Calendar.MONTH);
+		String month = mm + 1 + "";
+		if (mm < 10) {
+			month = "0"+month;
+		}
+		String dd = "";
+		if (day < 10) {
+			dd = "0"+calendar.get(Calendar.DAY_OF_MONTH);
+		}else{
+			dd = ""+calendar.get(Calendar.DAY_OF_MONTH);
+		}
+		return month + "/" + dd;
+	}
+	
+	
+	/** 
+	    * 获取过去第几天的日期 
+	    * 
+		*/
+
+	public static String getPastDate(int past) { 
+		Calendar calendar = Calendar.getInstance();  
+	       calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) - past);  
+	       Date today = calendar.getTime();  
+	       SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");  
+	       String result = format.format(today);   
+	       result=result.substring(5);
+	       return result;
+	}
+}

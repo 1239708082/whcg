@@ -1,0 +1,89 @@
+package com.ltsk.whcg.listener;
+
+
+import com.ltsk.whcg.service.BridgeDefectRecordService;
+import com.ltsk.whcg.service.WarningListService;
+import com.ltsk.whcg.entity.BridgeDefectRecord;
+import com.ltsk.whcg.entity.WarningList;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+import java.util.List;
+import java.util.concurrent.*;
+
+
+//@WebListener
+@Slf4j
+public class MunicipalListener implements ServletContextListener {
+    @Autowired
+    private BridgeDefectRecordService bridgeDefectRecordService;
+
+    @Autowired
+    private WarningListService warningListService;
+
+    public static JsonArray MUNICIPAL = new JsonArray();
+
+    public MunicipalListener() {
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent arg0)  { 
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent)  {
+        WebApplicationContextUtils.getRequiredWebApplicationContext(servletContextEvent.getServletContext())
+                .getAutowireCapableBeanFactory().autowireBean(this);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 5, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+    	executor.execute(()-> {
+                while (true) {
+                    try {
+                        JsonArray result = new JsonArray();
+                        List<BridgeDefectRecord> bridgeDefectRecordList = bridgeDefectRecordService.getAll();
+                        bridgeDefectRecordList.forEach(e->{
+                            JsonObject obj = new JsonObject();
+                            obj.put("barriertype", "3");
+                            obj.put("eventType", "桥梁");
+                            obj.put("warningType", "桥梁损坏");
+                            obj.put("id", e.getKeyid());
+                            obj.put("bridgeName", e.getBridgename());
+                            obj.put("departmentName", e.getDepartmentname());
+                            obj.put("path",e.getPath());
+                            obj.put("name", e.getRecorddescription());
+                            obj.put("updatetime", e.getCreatedtime()+"");
+                            result.add(obj);
+                            });
+
+                        List<WarningList> warningList = warningListService.getAll();
+                        warningList.forEach(e -> {
+                            JsonObject obj = new JsonObject();
+                            obj.put("barriertype", "4");
+                            obj.put("eventType", "燃气");
+                            obj.put("warningType", "设备异常");
+                            obj.put("id", e.getW_id());
+                            obj.put("updatetime", e.getOccurdate()+"");
+                            obj.put("RecoveryDate", e.getRecoverydate()+"");
+                            obj.put("name",
+                                   e.getWarningcontent());
+                            obj.put("areaname", e.getAreaname());
+                            obj.put("departname", e.getDepartname());
+                            result.add(obj);
+                        });
+                        MunicipalListener.MUNICIPAL = result;
+                        log.info("市政推送初始化查询助手太累了，休息30秒钟！");
+                        Thread.sleep(30000);
+                    } catch (Exception e) {
+                        log.error("市政推送初始化查询失败!"+e.getMessage());
+                        continue;
+                    }
+                }
+           });
+       }
+    }
+

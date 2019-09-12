@@ -1,0 +1,61 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.KitchenWasteCarService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.KitchenWasteCarMapper;
+import com.ltsk.whcg.entity.Ccsyc;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class KitchenWasteCarServiceImpl implements KitchenWasteCarService {
+
+    @Autowired
+    private KitchenWasteCarMapper kitchenWasteCarMapper;
+    @Override
+    public List<Ccsyc> getAll(String xzqh) {
+    	String xzqh_name = XZQHListener.XZQHMap.get(xzqh);
+        try {
+        	if(xzqh_name.equals("武汉经济技术开发区"))
+        		xzqh_name="武汉开发区";
+    		if(xzqh_name.equals("武汉东湖新技术开发区"))
+    			xzqh_name="东湖高新区";
+    		if(xzqh_name.equals("东湖生态旅游风景区管委会"))
+    			xzqh_name="东湖风景区";
+        	if(("全市").equals(xzqh_name)){
+        		xzqh_name=null;
+        	}
+			return kitchenWasteCarMapper.getAll(xzqh_name);
+		} catch (Exception e) {
+			log.error("餐厨垃圾车信息查询失败!!");
+			return new ArrayList<>();
+		}
+    }
+	@Override
+	public Integer get_sum(String xzqh) {
+		String xzqh_str = XZQHListener.XZQHMap.get(xzqh);
+		try{
+			if(xzqh_str.equals("武汉经济技术开发区"))
+				xzqh_str="武汉开发区";
+			if(xzqh_str.equals("武汉东湖新技术开发区"))
+				xzqh_str="东湖高新区";
+			if(xzqh_str.equals("东湖生态旅游风景区管委会"))
+				xzqh_str="东湖风景区";
+			if(xzqh_str.equals("全市")){
+				xzqh_str=null;
+			}
+			return kitchenWasteCarMapper.get_sum(xzqh_str);
+		}catch (Exception e) {
+			log.error("查询所有餐厨垃圾车总条数失败");
+			return 0;
+		}
+	}
+}

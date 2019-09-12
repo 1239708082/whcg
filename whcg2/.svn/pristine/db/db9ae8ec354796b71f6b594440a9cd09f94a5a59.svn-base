@@ -1,0 +1,145 @@
+package com.ltsk.whcg.base.mapper;
+
+import com.ltsk.whcg.entity.Ccljc;
+import com.ltsk.whcg.entity.Czjl;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface KitchenWasteFactoryMapper {
+
+    @Select("select * from CCLJC")
+    List<Ccljc>  getAll();
+
+    @Select("<script> " +  
+            "select * from (SELECT a.*,rownum rn from (SELECT * " +  
+            "from  CZJL  " +  
+            "<where>"+
+             "  trunc(taredatetime)= to_date( #{time},'YYYY-MM-DD') "+
+            " <if test=' unit !=null '>"+
+             "and handleunit =  #{unit}"+
+             "</if> " +  
+            " <if test='area !=null '>"+
+            "and area =  #{area}"+
+             "</if> " +  
+            "</where>"+
+           " and #{endNum} >= rownum"+
+            " order by taredatetime ) a ) where rn > #{startNum}"+
+            " </script> ")  
+    List<Czjl> getAllToday(@Param("endNum") Integer endNum,@Param("startNum")Integer startNum,@Param("time")String time, @Param("area")String area, @Param("unit")String unit);
+    
+  
+    @Select("<script> " +  
+            "SELECT * " +  
+            "from  CZJL  " +  
+            "<where>"+
+             "  trunc(taredatetime)= to_date( #{time},'YYYY-MM-DD') "+
+            " <if test=' unit !=null '>"+
+             "and handleunit =  #{unit}"+
+             "</if> " +  
+            " <if test='area !=null '>"+
+            "and area =  #{area}"+
+             "</if> " +  
+            "</where>"+
+            " order by taredatetime"+
+            " </script> ")  
+    List<Czjl> getAllList(@Param("time")String time, @Param("area")String area, @Param("unit")String unit);
+
+    
+    //    @Select("select count(*) from CZJL z where taredatetime > trunc(sysdate)   order by taredatetime ")
+    @Select("<script> " +  
+            "SELECT count(*) " +  
+            "from  CZJL " +  
+            "<where>"+
+             "   trunc(taredatetime)= to_date( #{time},'YYYY-MM-DD') "+
+            " <if test=' unit !=null '>"+
+             "and handleunit =  #{unit}"+
+             "</if> " +  
+            " <if test='area !=null '>"+
+            "and area =  #{area}"+
+             "</if> " +  
+            "</where>"+
+            " order by taredatetime "+
+            " </script> ")  
+	Integer getCountToday(@Param("time")String time, @Param("area")String area, @Param("unit")String unit);
+
+//    @Select("select count(*) from CZJL z where taredatetime > trunc(sysdate) and productinorout = '1' ")
+    @Select("<script> " +  
+            "SELECT count(*) " +  
+            "from  CZJL " +  
+            "<where>"+
+             " productinorout = '1' and  trunc(taredatetime)= to_date( #{time},'YYYY-MM-DD') "+
+            " <if test=' unit !=null '>"+
+             "and handleunit =  #{unit}"+
+             "</if> " +  
+            " <if test='area !=null '>"+
+            "and area =  #{area}"+
+             "</if> " +  
+            "</where>"+
+            " order by taredatetime "+
+            " </script> ")  
+    Integer getIn(@Param("time")String time, @Param("area")String area, @Param("unit")String unit);
+    
+//    @Select("select count(*) from CZJL z where taredatetime > trunc(sysdate) and productinorout = '0' ")
+    @Select("<script> " +  
+            "SELECT count(*) " +  
+            "from  CZJL " +  
+            "<where>"+
+             " productinorout = '0' and  trunc(taredatetime)= to_date( #{time},'YYYY-MM-DD') "+
+            " <if test=' unit !=null '>"+
+             "and handleunit =  #{unit}"+
+             "</if> " +  
+            " <if test='area !=null '>"+
+            "and area =  #{area}"+
+             "</if> " +  
+            "</where>"+
+            " order by taredatetime "+
+            " </script> ")  
+    Integer getOut(@Param("time")String time, @Param("area")String area, @Param("unit")String unit);
+
+//    @Select("select sum(netweight) from CZJL z where taredatetime > trunc(sysdate) and productinorout = '1' ")
+    @Select("<script> " +  
+            "SELECT sum(netweight) " +  
+            "from  CZJL " +  
+            "<where>"+
+             " productinorout = '1' and  trunc(grossdatetime)= to_date( #{time},'YYYY-MM-DD') "+
+            " <if test=' unit !=null '>"+
+             "and handleunit =  #{unit}"+
+             "</if> " +  
+            " <if test='area !=null '>"+
+            "and area =  #{area}"+
+             "</if> " +  
+            "</where>"+
+            " order by taredatetime "+
+            " </script> ")  
+  
+    Double getInNum(@Param("time")String time, @Param("area")String area, @Param("unit")String unit);
+    
+//    @Select("select sum(netweight) from CZJL z where taredatetime > trunc(sysdate) and productinorout = '0' ")
+    @Select("<script> " +  
+            "SELECT count(*) " +  
+            "from  CZJL " +  
+            "<where>"+
+             " productinorout = '0' and  trunc(grossdatetime)= to_date( #{time},'YYYY-MM-DD') "+
+            " <if test=' unit !=null '>"+
+             "and handleunit =  #{unit}"+
+             "</if> " +  
+            " <if test='area !=null '>"+
+            "and area =  #{area}"+
+             "</if> " +  
+            "</where>"+
+            " order by taredatetime "+
+            " </script> ")  
+    Double getOutNum(@Param("time")String time, @Param("area")String area, @Param("unit")String unit);
+
+    
+    @Select("select distinct(handleunit) from czjl ")
+	List<String> getUnit();
+    
+    @Select("select distinct(area) from czjl ")
+   	List<String> getArea();
+}

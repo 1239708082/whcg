@@ -1,0 +1,48 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.GasStationService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.GasStationMapper;
+import com.ltsk.whcg.entity.Gasstation;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class GasStationServiceImpl implements GasStationService {
+
+    @Autowired
+    private GasStationMapper gasStationMapper;
+    @Override
+    public List<Gasstation> getAll(String type,String xzqh) {
+        String param = "";
+        if ("0".equals(type)) {
+            param =  "门站";
+        } else if ("1".equals(type)) {
+            param = "加气站";
+        } else if ("2".equals(type)) {
+            param =  "储配站";
+        } else if ("3".equals(type)) {
+            param = "供应站";
+        }
+        Map<String,String> map  = XZQHListener.XZQHMap;
+        xzqh = map.get(xzqh);
+        if("全市".equals(xzqh)){
+        	 xzqh=null;
+         }
+        try {
+			return gasStationMapper.getByType(param,xzqh);
+		} catch (Exception e) {
+			log.error("门站或加气站或储配站或供应站信息查询失败!!");
+			return  new ArrayList<>();
+		}
+    }
+}

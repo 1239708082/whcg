@@ -1,0 +1,30 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.UnloadService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.UnloadMapper;
+import com.ltsk.whcg.entity.Unload;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class UnloadServiceImpl implements UnloadService {
+
+    @Autowired
+    private UnloadMapper unloadMapper;
+    @Override
+    public List<Unload> getAll() {
+    	try{
+            return unloadMapper.getAll();
+    	}catch(Exception e){
+    		log.error("获得所有消纳点失败");
+    		return new ArrayList<>();
+    	}
+    }
+}

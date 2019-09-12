@@ -1,0 +1,30 @@
+package com.ltsk.whcg;
+
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.ComponentScan;
+
+import javax.servlet.annotation.WebFilter;
+
+
+@SpringBootApplication
+@ComponentScan(basePackages = "com.ltsk")
+@ServletComponentScan(value = "com.ltsk.whcg.listener")
+//@ServletComponentScan("com.ltsk.whcg.listener,com.ltsk.whcg.shrioNew")
+
+
+public class WhcgApplication extends SpringBootServletInitializer{
+
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		return builder.sources(WhcgApplication.class);
+	}
+
+	public static void main(String[] args) {
+		SpringApplication.run(WhcgApplication.class, args);
+	}
+}

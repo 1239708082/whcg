@@ -1,0 +1,60 @@
+package com.ltsk.whcg.service.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.ltsk.whcg.base.mapper.GetCcljWeightMapper;
+import com.ltsk.whcg.entity.GetCcljWeight;
+import com.ltsk.whcg.service.GetCcljWeightService;
+
+import lombok.extern.slf4j.Slf4j;
+@Service
+@Slf4j
+public class GetCcljWeightServiceImpl implements GetCcljWeightService{
+	@Autowired
+	private GetCcljWeightMapper getCcljWeightMapper;
+	@Override
+	public List<GetCcljWeight> getWeight() {
+		try {
+			return getCcljWeightMapper.getWright();
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("获取餐厨垃圾处理厂一周处理量失败!!");
+		}
+		return null;
+	}
+	@Override
+	public List<GetCcljWeight> getWrightOrgname() {
+		try {
+			return getCcljWeightMapper.getWrightOrgname();
+		} catch (Exception e) {
+			log.error("获取餐厨垃圾分区实时统计失败!!");
+
+		}
+		return null;
+	}
+	@Override
+	public List<GetCcljWeight> getWeightByXzqh(String xzqh) {
+		return getCcljWeightMapper.getWeightByXzqh(xzqh);
+	}
+	@Override
+	public List<GetCcljWeight> getWeightOrgnameByXzqh(String xzqh) {
+		return getCcljWeightMapper.getWeightOrgnameByXzqh(xzqh);
+	}
+	@Override
+	public Double getWeight_sum(String xzqh) {
+		try {
+			if(xzqh.equals("全市")){
+				xzqh=null;
+			}
+			return getCcljWeightMapper.getWeight_sum(xzqh);
+		} catch (Exception e) {
+			log.error("获取垃圾处理总量失败!!!");
+		}
+		return null;
+	}
+
+}

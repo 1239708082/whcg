@@ -1,0 +1,29 @@
+package com.ltsk.whcg.base.mapper;
+
+import com.ltsk.whcg.entity.Muck;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface MuckMapper {
+
+//    @Select("select t.vehicleNo,t.deviceno,t.gpsdatetime,t.address,t.gdx,t.gdy from muck  t where t.updatetime >( sysdate - (1/480 )) and t.vehiclestatusid in ('1','2')")
+	@Select("<script> " +  
+            "SELECT t.vehicleNo,t.deviceno,t.gpsdatetime,t.address,t.gdx,t.gdy " +  
+            "from  muck  t where t.updatetime >( sysdate - (1/480 )) and t.vehiclestatusid in ('1','2') " +  
+            " <if test='xzqh != null'>and t.address like  #{xzqh}</if> " +  
+            " </script> ")  
+    List<Muck> getAll(@Param("xzqh")String xzqh);
+	
+//    @Select("select count(*) from muck")
+	@Select("<script> " +  
+            "SELECT count(*) " +  
+            "from  muck  where 1 = 1  " +  
+            " <if test='xzqh != null'>and address like #{xzqh}</if> " +  
+            " </script> ")  
+    Integer get_sum(@Param("xzqh")String xzqh);
+}

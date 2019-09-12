@@ -1,0 +1,68 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.FumeUnitService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.FumeUnitMapper;
+import com.ltsk.whcg.entity.Cyyycginfo;
+import com.ltsk.whcg.entity.LampBlack;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class FumeUnitServiceImpl implements FumeUnitService {
+
+	@Autowired
+	private FumeUnitMapper fumeUnitMapper;
+
+	@Override
+	public List<Cyyycginfo> getAll(String xzqh) {
+		String xzqh_name = XZQHListener.XZQHMap.get(xzqh);
+		try {
+			if (xzqh_name.equals("全市")) {
+				xzqh_name = null;
+			}
+			return fumeUnitMapper.getAll(xzqh_name);
+		} catch (Exception e) {
+			log.error("餐厨油烟单位信息查询失败!!");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<LampBlack> getTampblack(String xzqh) {
+
+		//因为每个库的xzqh叫法不一样.所以根据实际库里的叫法来对应查询
+		if ("420120000000".equals(xzqh)) {
+			xzqh = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqh = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqh = "经开区";
+		} else if ("420114000000".equals(xzqh)) {
+			xzqh = "蔡甸区";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqh = null;
+		} else {
+			xzqh = XZQHListener.XZQHMap.get(xzqh);
+		}
+
+		try {
+			List<LampBlack> list = fumeUnitMapper.getTampBlackInfo(xzqh);
+			for (int i = 0; i < list.size(); i++) {
+				list.get(i).setId(i);
+			}
+			return list;
+		} catch (Exception e) {
+			log.error("餐厨油烟单位信息查询失败!!");
+			return new ArrayList<>();
+		}
+	}
+}

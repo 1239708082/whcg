@@ -1,0 +1,29 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.Ccljc;
+import com.ltsk.whcg.entity.Czjl;
+
+import java.util.List;
+
+public interface KitchenWasteFactoryService {
+    List<Ccljc> getAll();
+
+	List<Czjl> getAllToday(Integer page, Integer rows, String time, String area, String unit);
+
+	Integer getCountToday(String time, String area, String unit);
+
+	Integer getIn(String time, String area, String unit);
+
+	Integer getOut(String time, String area, String unit);
+
+	Double getInNum(String time, String area, String unit);
+	
+	Double getOutNum(String time, String area, String unit);
+
+	List<String> getUnit();
+
+	List<String> getArea();
+
+	List<Czjl> getAllList(String time, String area, String unit);
+
+}

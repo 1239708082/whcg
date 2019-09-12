@@ -1,0 +1,40 @@
+package com.ltsk.whcg.controller;
+
+import com.ltsk.whcg.service.KitchenWasteUnitService;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+import com.ltsk.whcg.entity.CcljcydwNew;
+import com.ltsk.whcg.listener.KitchenWasteUnitListener;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * 餐厨单位
+ */
+@RestController
+public class KitchenWasteUnitController {
+
+	@Autowired
+	private KitchenWasteUnitService kitchenWasteUnitService;
+
+	@RequestMapping("/kitchenWasteUnit")
+	public Result getAll(@RequestParam(value="xzqh",defaultValue="420100000000")String xzqh) {
+		if(xzqh.equals("420100000000")){
+			List<CcljcydwNew> result = KitchenWasteUnitListener.KitchenWasteUnit;
+			
+			if (result == null || result.size() == 0) {
+				result = kitchenWasteUnitService.getAll(xzqh);
+			}
+			return ResultUtils.success(result);
+		}else{
+			
+			return ResultUtils.success(kitchenWasteUnitService.getAll(xzqh));
+		}
+	}
+}

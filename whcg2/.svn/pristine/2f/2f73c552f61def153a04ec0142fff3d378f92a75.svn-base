@@ -1,0 +1,40 @@
+package com.ltsk.whcg.controller;
+
+import com.ltsk.whcg.listener.MuckListener;
+import com.ltsk.whcg.service.MuckService;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+import com.ltsk.whcg.entity.Gps;
+import com.ltsk.whcg.entity.Muck;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * 渣土车
+ */
+@RestController
+public class MuckController {
+	@Autowired
+    private MuckService muckService;
+
+    @RequestMapping("/muck")
+    public Result getAll(@RequestParam(value="xzqh") String xzqh) {
+    		   List<Muck> muck = muckService.getAll(xzqh);
+               Integer muckSum = muckService.get_sum(xzqh);
+        return ResultUtils.success(muck, null, muckSum);
+    }
+    
+    @RequestMapping("/getMuckTrack")
+    public Result getTrack(@RequestParam(value="vehicleno") String vehicleno) {
+    	
+    	List<Double[]> trace = muckService.getTrace(vehicleno);
+    	
+    	return ResultUtils.success(trace);
+    }
+    
+    
+}

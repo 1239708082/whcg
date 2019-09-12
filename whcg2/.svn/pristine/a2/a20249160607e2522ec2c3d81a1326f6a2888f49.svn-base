@@ -1,0 +1,62 @@
+package com.ltsk.whcg.dataPushFactory;
+
+
+import com.ltsk.whcg.listener.MunicipalListener;
+import com.ltsk.whcg.listener.SanitationlListener;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.shareddata.LocalMap;
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+@Slf4j
+public class MunicipalPushVerticle extends AbstractVerticle {
+
+    private static JsonArray oldResult = new JsonArray();
+    SimpleDateFormat tdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    SimpleDateFormat udf = new SimpleDateFormat("yyyy/MM/dd");
+    private long stime;
+    private long etime;
+
+    @Override
+    public void start() {
+        vertx.setPeriodic(30000, id -> {
+            LocalMap<String, Integer> municipal = vertx.sharedData().getLocalMap("municipal");
+            // 0表示没有worker在工作
+            if (municipal.get("municipal") == 0) {
+                vertx.executeBlocking(future -> {
+                    try {
+                        vertx.sharedData().getLocalMap("municipal").put("municipal", 1);
+                        stime = Calendar.getInstance().getTime().getTime() / 1000;
+                        JsonArray result = MunicipalListener.MUNICIPAL;
+                        future.complete(result);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        future.fail(e);
+                    }
+                }, res -> {
+                    if (res.succeeded()) {
+                        JsonArray result = (JsonArray) res.result();
+                        boolean flag = result.equals(oldResult);
+                        if (!flag) {
+                            // 推送内容
+                            vertx.eventBus().publish("municipal", result);
+                            oldResult = result;
+                        }
+                        etime = Calendar.getInstance().getTime().getTime() / 1000;
+                        log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送完毕    耗时    "
+                                + (etime - stime) + "  秒   !");
+                        vertx.sharedData().getLocalMap("municipal").put("municipal", 0);
+                    }
+                    if (res.failed()) {
+                        vertx.sharedData().getLocalMap("municipal").put("municipal", 0);
+                        log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送失败    耗时    "
+                                + (etime - stime) + "  秒   !");
+                    }
+                });
+            }
+        });
+    }
+}

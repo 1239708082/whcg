@@ -1,0 +1,206 @@
+package com.ltsk.whcg.entity;
+
+
+import java.io.Serializable;
+
+
+public class Ccljc implements Serializable {
+    private Object id;
+
+    private Object code;
+
+    private Object disname;
+
+    private Object buscard;
+
+    private Object address;
+
+    private String deptype;
+
+    private Object manager;
+
+    private Object linker;
+
+    private Object tel;
+
+    //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String valiDate;
+
+    private Object longtitute;
+
+    private Object latitute;
+
+    private Object scale;
+
+    private Object status;
+
+    private Object lat;
+
+    private Object lon;
+
+    private static final long serialVersionUID = 1L;
+
+    public Object getId() {
+        return id;
+    }
+
+    public void setId(Object id) {
+        this.id = id;
+    }
+
+    public Object getCode() {
+        return code;
+    }
+
+    public void setCode(Object code) {
+        this.code = code;
+    }
+
+    public Object getDisname() {
+        return disname;
+    }
+
+    public void setDisname(Object disname) {
+        this.disname = disname;
+    }
+
+    public Object getBuscard() {
+        return buscard;
+    }
+
+    public void setBuscard(Object buscard) {
+    	if("null".equals(buscard)){
+    		buscard ="暂无信息";
+    	}
+        this.buscard = buscard;
+    }
+
+    public Object getAddress() {
+        return address;
+    }
+
+    public void setAddress(Object address) {
+        this.address = address;
+    }
+
+    public String getDeptype() {
+        return deptype;
+    }
+
+    public void setDeptype(String deptype) {
+    	if("null".equals(deptype)){
+    		deptype ="暂无信息";
+    	}
+        this.deptype = deptype;
+    }
+
+    public Object getManager() {
+        return manager;
+    }
+
+    public void setManager(Object manager) {
+    	if("null".equals(manager)){
+    		manager ="暂无信息";
+    	}
+        this.manager = manager;
+    }
+
+    public Object getLinker() {
+        return linker;
+    }
+
+    public void setLinker(Object linker) {
+        this.linker = linker;
+    }
+
+    public Object getTel() {
+        return tel;
+    }
+
+    public void setTel(Object tel) {
+        this.tel = tel;
+    }
+
+    public String getValiDate() {
+        return valiDate;
+    }
+
+    public void setValiDate(String valiDate) {
+        this.valiDate = valiDate;
+    }
+
+    public Object getLongtitute() {
+        return longtitute;
+    }
+
+    public void setLongtitute(Object longtitute) {
+        this.longtitute = longtitute;
+    }
+
+    public Object getLatitute() {
+        return latitute;
+    }
+
+    public void setLatitute(Object latitute) {
+        this.latitute = latitute;
+    }
+
+    public Object getScale() {
+        return scale;
+    }
+
+    public void setScale(Object scale) {
+        this.scale = scale;
+    }
+
+    public Object getStatus() {
+        return status;
+    }
+
+    public void setStatus(Object status) {
+        this.status = status;
+    }
+
+    public Object getLat() {
+        return lat;
+    }
+
+    public void setLat(Object lat) {
+        this.lat = lat;
+    }
+
+    public Object getLon() {
+        return lon;
+    }
+
+    public void setLon(Object lon) {
+        this.lon = lon;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("Hash = ").append(hashCode());
+        sb.append(", id=").append(id);
+        sb.append(", code=").append(code);
+        sb.append(", disname=").append(disname);
+        sb.append(", buscard=").append(buscard);
+        sb.append(", address=").append(address);
+        sb.append(", deptype=").append(deptype);
+        sb.append(", manager=").append(manager);
+        sb.append(", linker=").append(linker);
+        sb.append(", tel=").append(tel);
+        sb.append(", valiDate=").append(valiDate);
+        sb.append(", longtitute=").append(longtitute);
+        sb.append(", latitute=").append(latitute);
+        sb.append(", scale=").append(scale);
+        sb.append(", status=").append(status);
+        sb.append(", lat=").append(lat);
+        sb.append(", lon=").append(lon);
+        sb.append(", serialVersionUID=").append(serialVersionUID);
+        sb.append("]");
+        return sb.toString();
+    }
+}

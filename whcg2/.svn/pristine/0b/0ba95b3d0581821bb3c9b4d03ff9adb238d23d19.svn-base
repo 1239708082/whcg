@@ -1,0 +1,115 @@
+package com.ltsk.whcg.dataPushFactory;
+
+
+import com.ltsk.whcg.listener.MunicipalListener;
+import com.ltsk.whcg.listener.SanitationlListener;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+public class MunicipalPushVerticle extends AbstractVerticle {
+
+    private static JsonArray oldResult = new JsonArray();
+    SimpleDateFormat tdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    SimpleDateFormat udf = new SimpleDateFormat("yyyy/MM/dd");
+    private long stime;
+    private long etime;
+
+    @Override
+    public void start() {
+        vertx.setPeriodic(30000, id -> {
+            LocalMap<String, Integer> municipal = vertx.sharedData().getLocalMap("municipal");
+            // 0表示没有worker在工作
+            if (municipal.get("municipal") == 0) {
+                vertx.executeBlocking(future -> {
+                    try {
+                        vertx.sharedData().getLocalMap("municipal").put("municipal", 1);
+                        stime = Calendar.getInstance().getTime().getTime() / 1000;
+                        JsonObject result = new JsonObject();
+                        //今日数据
+                        JsonObject total = MunicipalListener.totalData;
+//                        System.out.println(total.toString()+"------today");
+                        result.put("total", total);
+//                        //一周数据
+//                        JsonObject week = MunicipalListener.weekData;
+//                        result.put("week", week);
+                        //警告指数
+                        JsonObject warning = MunicipalListener.warningData;
+                        result.put("warning", warning);
+//                        System.out.println(warning.toString()+"------warning");
+
+                        //区域病害
+                        JsonObject area = MunicipalListener.areaData;
+                        result.put("area", area);
+//                        System.out.println(area.toString()+"------area");
+                        //桥梁病害
+                        JsonObject bridge = MunicipalListener.bridgeData;
+                        result.put("bridge", bridge);
+//                        System.out.println(bridge.toString()+"------bridge");
+						future.complete(result);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        future.fail(e);
+                    }
+                }, res -> {
+                    if (res.succeeded()) {
+                    	JsonObject obj = (JsonObject) res.result();
+                    	//发布今日站点情况汇总
+                    	JsonObject total = obj.getJsonObject("total");
+//                    	System.out.println(total.toString());
+                        Map<String, String> xzqhMap = XZQHListener.XZQHMap;
+                        for (String xzqh : xzqhMap.keySet()) {
+                            String key = "totalData_"+xzqh;
+                            JsonObject js = total.getJsonObject(key);
+                            vertx.eventBus().publish(key, js);
+                        }
+//                        System.out.println("今日站点发布完毕");
+                      //发布各区警告指数
+                    	JsonObject warning = obj.getJsonObject("warning");
+                        for (String xzqh : xzqhMap.keySet()) {
+                            String key = "warningData_"+xzqh;
+                            JsonArray jsonArray = warning.getJsonArray(key);
+                            vertx.eventBus().publish(key, jsonArray);
+                        }
+//                        System.out.println("各区警告指数发布完毕");
+                        //发布区域病害
+                    	JsonObject area = obj.getJsonObject("area");
+                        for (String xzqh : xzqhMap.keySet()) {
+                            String key = "areaData_"+xzqh;
+                            JsonArray jsonArray = area.getJsonArray(key);
+                            vertx.eventBus().publish(key, jsonArray);
+                        }
+//                        System.out.println("区域病害发布完毕");
+                        //发布桥梁病害
+                    	JsonObject bridge = obj.getJsonObject("bridge");
+                        for (String xzqh : xzqhMap.keySet()) {
+                            String key = "bridgeData_"+xzqh;
+                            JsonArray jsonArray = bridge.getJsonArray(key);
+                            vertx.eventBus().publish(key, jsonArray);
+                        }
+//                        System.out.println("桥梁发布完毕");
+                        etime = Calendar.getInstance().getTime().getTime() / 1000;
+                        log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送完毕    耗时    "
+                                + (etime - stime) + "  秒   !");
+                        vertx.sharedData().getLocalMap("municipal").put("municipal", 0);
+                    }
+                    if (res.failed()) {
+                        vertx.sharedData().getLocalMap("municipal").put("municipal", 0);
+                        log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送失败    耗时    "
+                                + (etime - stime) + "  秒   !");
+                    }
+                });
+            }
+        });
+    }
+}

@@ -1,0 +1,165 @@
+package com.ltsk.whcg.dataPushFactory;
+
+import com.ltsk.whcg.listener.SanitationlListener;
+import com.ltsk.whcg.listener.XZQHListener;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
+@Slf4j
+public class SanitationlPushVerticle extends AbstractVerticle {
+
+	public static HashMap<String, Object> susMap = new HashMap<>();
+	public static HashMap<String, Object> garMap = new HashMap<>();
+	public static HashMap<String, Object> preMap = new HashMap<>();
+	public static HashMap<String, Object> tampMap = new HashMap<>();
+	public static HashMap<String, Object> ccljWeekMap = new HashMap<>();
+	public static HashMap<String, Object> ccljNowMap = new HashMap<>();
+
+	SimpleDateFormat tdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	SimpleDateFormat udf = new SimpleDateFormat("yyyy/MM/dd");
+	private long stime;
+	private long etime;
+
+	@Override
+	public void start() {
+		JsonObject result = new JsonObject();
+		long timerID = vertx.setPeriodic(60000, id -> {
+			LocalMap<String, Integer> sanitationl = vertx.sharedData().getLocalMap("sanitationl");
+			// 0表示没有worker在工作
+			if (sanitationl.get("sanitationl") == 0) {
+				vertx.executeBlocking(future -> {
+					try {
+						vertx.sharedData().getLocalMap("sanitationl").put("sanitationl", 1);
+						stime = Calendar.getInstance().getTime().getTime() / 1000;
+						// 可疑工地、可疑消纳点
+						JsonObject suspic = SanitationlListener.SUSPIC;
+						result.put("suspic", suspic);
+						// 生活垃圾各厂一周处理量
+						JsonObject garbageweek = SanitationlListener.GARBAGEWEEK;
+						result.put("garbageweek", garbageweek);
+						// 生活垃圾各区实时产生量
+						JsonObject pregarbage = SanitationlListener.PREGARBAGE;
+						result.put("pregarbage", pregarbage);
+
+						// 油烟报警信息
+						JsonObject pretampblack = SanitationlListener.PRETAMPBLACK;
+						result.put("pretampblack", pretampblack);
+
+						// 餐厨垃圾各厂一周处理量
+						JsonObject ccljweightweek = SanitationlListener.CCLJWEIGHT_WEEK;
+						result.put("ccljweightweek", ccljweightweek);
+
+						// 餐厨垃圾各区实时产生量
+						JsonObject ccljweightnow = SanitationlListener.CCLJWEIGHT_NOW;
+						result.put("ccljweightnow", ccljweightnow);
+
+						future.complete(result);
+					} catch (Exception e) {
+						e.printStackTrace();
+						future.fail(e);
+					}
+				}, res -> {
+					if (res.succeeded()) {
+						JsonObject obj = (JsonObject) res.result();
+						JsonObject suspic = obj.getJsonObject("suspic");
+						Map<String, String> xzqhMap = XZQHListener.XZQHMap;
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "suspic_" + xzqh;
+							JsonArray js = suspic.getJsonArray(key);
+							if (susMap.get(key) == null) {
+								susMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!susMap.get(key).equals(js)) {
+								susMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+
+						JsonObject garbageweek = obj.getJsonObject("garbageweek");
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "garbageweek_" + xzqh;
+							JsonArray js = garbageweek.getJsonArray(key);
+							if (garMap.get(key) == null) {
+								garMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!garMap.get(key).equals(js)) {
+								garMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+
+						JsonObject pregarbage = obj.getJsonObject("pregarbage");
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "pregarbage_" + xzqh;
+							JsonArray js = pregarbage.getJsonArray(key);
+							if (preMap.get(key) == null) {
+								preMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!preMap.get(key).equals(js)) {
+								preMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+
+						JsonObject pretampblack = obj.getJsonObject("pretampblack");
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "pretampblack_" + xzqh;
+							JsonArray js = pretampblack.getJsonArray(key);
+							if (tampMap.get(key) == null) {
+								tampMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!tampMap.get(key).equals(js)) {
+								tampMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+
+						JsonObject ccljweightweek = obj.getJsonObject("ccljweightweek");
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "ccljweightweek_" + xzqh;
+							JsonArray js = ccljweightweek.getJsonArray(key);
+							if (ccljWeekMap.get(key) == null) {
+								ccljWeekMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!ccljWeekMap.get(key).equals(js)) {
+								ccljWeekMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+
+						JsonObject ccljweightnow = obj.getJsonObject("ccljweightnow");
+						for (String xzqh : xzqhMap.keySet()) {
+							String key = "ccljweightnow_" + xzqh;
+							JsonArray js = ccljweightnow.getJsonArray(key);
+							if (ccljNowMap.get(key) == null) {
+								ccljNowMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							} else if (!ccljNowMap.get(key).equals(js)) {
+								ccljNowMap.put(key, js);
+								vertx.eventBus().publish(key, js);
+							}
+						}
+
+						etime = Calendar.getInstance().getTime().getTime() / 1000;
+						log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送完毕    耗时    " + (etime - stime)
+								+ "  秒   !");
+						vertx.sharedData().getLocalMap("sanitationl").put("sanitationl", 0);
+					}
+					if (res.failed()) {
+						vertx.sharedData().getLocalMap("sanitationl").put("sanitationl", 0);
+						log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送失败    耗时    " + (etime - stime)
+								+ "  秒   !");
+					}
+				});
+			}
+		});
+	}
+}

@@ -1,0 +1,77 @@
+package com.ltsk.whcg.entity;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class Ssyybjxx implements Serializable {
+    private String alarmvalue;
+
+    private String hotelname;
+
+    private String confirmstatus;
+
+    private String alarmtype;
+
+    //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String alarmtime;
+
+    private static final long serialVersionUID = 1L;
+
+    public String getAlarmvalue() {
+        return alarmvalue;
+    }
+
+    public void setAlarmvalue(String alarmvalue) {
+        this.alarmvalue = alarmvalue == null ? "" : alarmvalue.trim();
+    }
+
+    public String getHotelname() {
+        return hotelname;
+    }
+
+    public void setHotelname(String hotelname) {
+        this.hotelname = hotelname == null ? "" : hotelname.trim();
+    }
+
+    public String getConfirmstatus() {
+        return confirmstatus;
+    }
+
+    public void setConfirmstatus(String confirmstatus) {
+        this.confirmstatus = confirmstatus == null ? "" : confirmstatus.trim();
+    }
+
+    public String getAlarmtype() {
+        return alarmtype;
+    }
+
+    public void setAlarmtype(String alarmtype) {
+        this.alarmtype = alarmtype == null ? "" : alarmtype.trim();
+    }
+
+    public String getAlarmtime() {
+        return alarmtime;
+    }
+
+    public void setAlarmtime(String alarmtime) {
+        this.alarmtime = alarmtime;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("Hash = ").append(hashCode());
+        sb.append(", alarmvalue=").append(alarmvalue);
+        sb.append(", hotelname=").append(hotelname);
+        sb.append(", confirmstatus=").append(confirmstatus);
+        sb.append(", alarmtype=").append(alarmtype);
+        sb.append(", alarmtime=").append(alarmtime);
+        sb.append(", serialVersionUID=").append(serialVersionUID);
+        sb.append("]");
+        return sb.toString();
+    }
+}

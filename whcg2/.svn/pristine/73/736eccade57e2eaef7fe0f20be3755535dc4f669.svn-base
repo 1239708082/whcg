@@ -1,0 +1,72 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.BridgeService;
+import com.ltsk.whcg.entity.Bridge;
+import com.ltsk.whcg.entity.CcljcydwNew;
+import com.ltsk.whcg.entity.Gasstation;
+import com.ltsk.whcg.entity.NoiseAndBuilding;
+import com.ltsk.whcg.entity.XZQH;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class BridgeServiceImplTest {
+
+//    @Autowired
+//    private BridgeService bridgeService;
+    @Autowired
+    private BuildingServiceImpl BdService;
+
+    @Autowired
+    private  GasStationServiceImpl gasService;
+    @Autowired
+     private KitchenWasteUnitServiceImpl kwSer;
+    
+    
+    @Test
+    public void testKw(){
+    	List<CcljcydwNew> list = kwSer.getAll(null);
+    	
+    	for (CcljcydwNew ccljcydwNew : list) {
+			System.out.println(ccljcydwNew);
+		}
+    }
+    
+    @Test
+    public void testGas(){
+    	List<Gasstation> list = gasService.getAll("2", null);
+    	System.out.println("查询结束");
+    	for (Gasstation gasstation : list) {
+			System.out.println(gasstation);
+		}
+    	
+    }
+    
+    
+    
+    @Test
+    public void getAllXzqh(){
+    	List<NoiseAndBuilding> list = BdService.getAllBuilding(null);
+    	
+	for (NoiseAndBuilding noiseAndBuilding : list) {
+		System.out.println(noiseAndBuilding);
+	}
+    
+    }
+    
+//    @Test
+//    public void getAll() {
+//        List<Bridge> list = bridgeService.getAll();
+//        list.forEach(e-> System.out.println(e));
+//        Assert.assertNotNull(list);
+//    }
+}

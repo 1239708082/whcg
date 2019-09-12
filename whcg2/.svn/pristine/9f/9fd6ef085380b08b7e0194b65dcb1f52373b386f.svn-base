@@ -1,0 +1,63 @@
+package com.ltsk.whcg.listener;
+
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+
+import com.ltsk.whcg.service.IndexService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+@WebListener
+@Slf4j
+public class IndexListener implements ServletContextListener {
+    @Autowired
+    private IndexService indexService;
+
+    public static Map<String,List<Object> > INDEX= new HashMap<>();
+    public IndexListener() {
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent arg0)  { 
+
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent)  {
+        WebApplicationContextUtils.getRequiredWebApplicationContext(servletContextEvent.getServletContext())
+                .getAutowireCapableBeanFactory().autowireBean(this);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 5, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+    	executor.execute(()-> {
+                while (true) {
+                    try {
+                    	Map<String, String> xzqhmap = XZQHListener.XZQHMap;
+                    	for (String s : xzqhmap.keySet()) {
+//                    		List<Object> list = indexService.getLaw(s);
+                    		List<Object> list1 = indexService.getSanitationl(s);
+                    		List<Object> list2 = indexService.getMunicipal(s);
+//                    		INDEX.put("law_"+s, list);
+                    		INDEX.put("sanitationl_"+s, list1);
+                    		INDEX.put("municipal_"+s, list2);
+						}
+                    	
+                        log.info("首页推送请求初始化查询组手太累了，休息30秒钟！");
+                        Thread.sleep(30000);
+                    } catch (Exception e) {
+                        log.error("首页推送请求初始化查询失败！"+e.getMessage());
+                        e.printStackTrace();
+                        continue;
+                    }
+                }
+           });
+       }
+    }
+

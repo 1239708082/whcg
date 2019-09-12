@@ -1,0 +1,129 @@
+package com.ltsk.whcg.entity;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+public class GasSite implements Serializable {
+    private BigDecimal gasid;
+
+    private String xzqh;
+
+    private String company;
+
+    private String siteName;
+
+    private String addr;
+
+    private String stationName;
+
+    private String call;
+
+    private String asTime;
+
+    private String installTime;
+
+    private String xy;
+
+    private static final long serialVersionUID = 1L;
+
+    public BigDecimal getGasid() {
+        return gasid;
+    }
+
+    public void setGasid(BigDecimal gasid) {
+        this.gasid = gasid;
+    }
+
+    public String getXzqh() {
+        return xzqh;
+    }
+
+    public void setXzqh(String xzqh) {
+        this.xzqh = xzqh == null ? "" : xzqh.trim();
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company == null ? "" : company.trim();
+    }
+
+    public String getSiteName() {
+        return siteName;
+    }
+
+    public void setSiteName(String siteName) {
+        this.siteName = siteName == null ? "" : siteName.trim();
+    }
+
+    public String getAddr() {
+        return addr;
+    }
+
+    public void setAddr(String addr) {
+        this.addr = addr == null ? "" : addr.trim();
+    }
+
+    public String getStationName() {
+        return stationName;
+    }
+
+    public void setStationName(String stationName) {
+        this.stationName = stationName == null ? "" : stationName.trim();
+    }
+
+    public String getCall() {
+        return call;
+    }
+
+    public void setCall(String call) {
+        this.call = call == null ? "" : call.trim();
+    }
+
+    public String getAsTime() {
+        return asTime;
+    }
+
+    public void setAsTime(String asTime) {
+        this.asTime = asTime == null ? "" : asTime.trim();
+    }
+
+    public String getInstallTime() {
+        return installTime;
+    }
+
+    public void setInstallTime(String installTime) {
+        this.installTime = installTime == null ? "" : installTime.trim();
+    }
+
+    public String getXy() {
+        return xy;
+    }
+
+    public void setXy(String xy) {
+        this.xy = xy == null ? "" : xy.trim();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("Hash = ").append(hashCode());
+        sb.append(", gasid=").append(gasid);
+        sb.append(", xzqh=").append(xzqh);
+        sb.append(", company=").append(company);
+        sb.append(", siteName=").append(siteName);
+        sb.append(", addr=").append(addr);
+        sb.append(", stationName=").append(stationName);
+        sb.append(", call=").append(call);
+        sb.append(", asTime=").append(asTime);
+        sb.append(", installTime=").append(installTime);
+        sb.append(", xy=").append(xy);
+        sb.append(", serialVersionUID=").append(serialVersionUID);
+        sb.append("]");
+        return sb.toString();
+    }
+}

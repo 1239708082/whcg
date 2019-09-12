@@ -1,0 +1,260 @@
+package com.ltsk.whcg.listener;
+
+import com.ltsk.whcg.service.FumeUnitService;
+import com.ltsk.whcg.service.GetCcljWeightService;
+import com.ltsk.whcg.service.HouseholdGarbageFactoryService;
+import com.ltsk.whcg.service.SuspicSiteUnloadService;
+import com.ltsk.whcg.entity.GarbageNow;
+import com.ltsk.whcg.entity.GetCcljWeight;
+import com.ltsk.whcg.entity.LampBlack;
+import com.ltsk.whcg.entity.LastWeekSHLJ;
+import com.ltsk.whcg.entity.Suspicsiteunload;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONArray;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+
+@WebListener
+@Slf4j
+public class SanitationlListener implements ServletContextListener {
+	@Autowired
+	private SuspicSiteUnloadService suspicSiteUnloadService;
+	@Autowired
+	private HouseholdGarbageFactoryService garbageFactoryService;
+	@Autowired
+	private FumeUnitService fumeUnitService;
+	@Autowired
+	private GetCcljWeightService getCcljWeightService;
+
+	public static JsonArray SUSPIC = new JsonArray();
+
+	public static JsonObject GARBAGEWEEK = new JsonObject();// 生活垃圾前七天产生量
+	// public static JsonArray GARBAGEWEEK = new JsonArray();//生活垃圾前七天产生量
+
+	public static JsonObject PREGARBAGE = new JsonObject();// 生活垃圾各区实时处理量
+	// public static JsonArray PREGARBAGE = new JsonArray();// 生活垃圾各区实时处理量
+	// public static JsonObject PREGARBAGESUM = new JsonObject();//生活垃圾当日处理总量
+	public static JsonObject PRETAMPBLACK = new JsonObject();// 各区实时油烟报警信息
+
+	public static JsonArray CCLJWEIGHTWEEK = new JsonArray();// 餐厨垃圾一周处理量
+	public static JsonArray CCLJWEIGHTNOW = new JsonArray();// 餐厨垃圾实时处理量
+	// public static JsonObject CCLJWEIGHTSUM=new JsonObject();//餐厨垃圾当日处理总量
+
+	public static JsonObject CCLJWEIGHT_WEEK = new JsonObject();//市级及区级餐厨垃圾一周处理量
+	public static JsonObject CCLJWEIGHT_NOW = new JsonObject();//市级及区级餐厨垃圾实时处理量
+
+	public SanitationlListener() {
+
+	}
+
+	@Override
+	public void contextDestroyed(ServletContextEvent arg0) {
+	}
+
+	@Override
+	public void contextInitialized(ServletContextEvent servletContextEvent) {
+		WebApplicationContextUtils.getRequiredWebApplicationContext(servletContextEvent.getServletContext())
+				.getAutowireCapableBeanFactory().autowireBean(this);
+		ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 5, TimeUnit.SECONDS,
+				new SynchronousQueue<Runnable>());
+		executor.execute(() -> {
+			while (true) {
+				try {
+					Map<String, String> xzqhmap = XZQHListener.XZQHMap;
+
+					JsonArray result = new JsonArray();
+					List<Suspicsiteunload> site = suspicSiteUnloadService.getAllByType("1");
+					site.forEach(e -> {
+						JsonObject obj = new JsonObject();
+						obj.put("eventType", "工地");
+						obj.put("warningType", "可疑工地");
+						obj.put("id", e.getId());
+						obj.put("gdx", e.getGdx());
+						obj.put("gdy", e.getGdy());
+						obj.put("name", e.getName());
+						obj.put("updatetime", e.getUpdatetime() + "");
+						result.add(obj);
+					});
+
+					List<Suspicsiteunload> unload = suspicSiteUnloadService.getAllByType("2");
+					unload.forEach(e -> {
+						JsonObject obj = new JsonObject();
+						obj.put("eventType", "消纳点");
+						obj.put("warningType", "可疑消纳点");
+						obj.put("id", e.getId());
+						obj.put("gdx", e.getGdx());
+						obj.put("gdy", e.getGdy());
+						obj.put("name", e.getName());
+						obj.put("updatetime", e.getUpdatetime() + "");
+						result.add(obj);
+					});
+
+					SanitationlListener.SUSPIC = result;
+					
+					
+					// 前7天生活垃圾总理分站点查询
+					for (String s : xzqhmap.keySet()) {
+							List<List<LastWeekSHLJ>> lastWeek = garbageFactoryService.getLastWeek(s);
+							JsonArray j11 = new JsonArray();
+							for (int i = 0; i < lastWeek.size(); i++) {
+								List<LastWeekSHLJ> inside = lastWeek.get(i);
+								JsonArray j1 = new JsonArray();
+								for (int j = 0; j < inside.size(); j++) {
+									JsonObject obj = new JsonObject();
+									LastWeekSHLJ bean = inside.get(j);
+									obj.put("day", bean.getDay());
+									obj.put("handleunit", bean.getHandleunit());
+									obj.put("netweight", bean.getNetweight());
+									j1.add(obj);
+								}
+								j11.add(j1);
+							}
+							SanitationlListener.GARBAGEWEEK.put("garbageweek_"+s, j11);
+					}
+					// 获得生活垃圾处理厂实时信息
+					for (String s : xzqhmap.keySet()) {
+						if("420100000000".equals(s)){
+							List<GarbageNow> list = garbageFactoryService.getNowGarbage(s);
+							JsonArray json14 = new JsonArray();
+							list.forEach(e -> {
+								JsonObject obj = new JsonObject();
+								obj.put("xzqh", e.getXzqh());
+								obj.put("weigh", e.getWeigh());
+								json14.add(obj);
+							});
+							SanitationlListener.PREGARBAGE .put("pregarbage_"+s, json14);
+						}else {
+							List<GarbageNow> list = garbageFactoryService.getNowGarbage(s);
+							JsonArray json14 = new JsonArray();
+							list.forEach(e -> {
+								JsonObject obj = new JsonObject();
+								//这里为了方便前端显示，将time设置为xzqh
+								obj.put("xzqh", e.getTime());
+								obj.put("weigh", e.getWeigh());
+								json14.add(obj);
+							});
+							SanitationlListener.PREGARBAGE .put("pregarbage_"+s, json14);
+						}
+					}
+					
+
+					// 生活垃圾今日处理量
+					/*
+					 * Object sumGarbage =
+					 * garbageFactoryService.getSumGarbage("420100000000");
+					 * JsonObject object = new JsonObject();
+					 * object.put("sumGarbage", sumGarbage); PREGARBAGESUM =
+					 * object;
+					 */
+
+					// 实时油烟报警信息	
+					for (String s : xzqhmap.keySet()) {
+						List<LampBlack> lamp = fumeUnitService.getTampblack(s);
+						JsonArray json12 = new JsonArray();
+						lamp.forEach(e -> {
+							JsonObject obj = new JsonObject();
+							obj.put("id", e.getId());
+							obj.put("warningType", e.getWarningType());
+							obj.put("alarmtime", e.getAlarmtime());
+							obj.put("alarmtype", e.getAlarmtype());
+							obj.put("alarmvalue", e.getAlarmvalue());
+							obj.put("hotelname", e.getHotelname());
+							obj.put("x", e.getX());
+							obj.put("y", e.getY());
+							json12.add(obj);
+						});
+						SanitationlListener.PRETAMPBLACK .put("pretampblack_"+s, json12);
+					}
+					// 餐厨垃圾一周处理量++
+					List<List<GetCcljWeight>> weight_week = getCcljWeightService.getWeight();
+			    	JsonArray jaa=new JsonArray();
+					for (int i = 0; i < weight_week.size(); i++) {
+						List<GetCcljWeight> list2 = weight_week.get(i);
+						for (GetCcljWeight g : list2) {
+					    	JsonObject joo=new JsonObject();
+							joo.put("time", g.getTime());
+							joo.put("weight", g.getWeight());
+							joo.put("name", g.getDepname());
+							jaa.add(joo);
+						}
+					}
+					SanitationlListener.CCLJWEIGHTWEEK=jaa;
+					
+
+					 //餐厨垃圾实时处理量++
+					List<GetCcljWeight> wrightOrgname = getCcljWeightService.getWrightOrgname();
+					JsonArray ja = new JsonArray();
+					wrightOrgname.forEach(e -> {
+						JsonObject jo = new JsonObject();
+						jo.put("key", e.getOrgname());
+						jo.put("weight", e.getWeight());
+						ja.add(jo);
+					});
+					SanitationlListener.CCLJWEIGHTNOW=ja;
+					
+					//市级及区级一周内餐厨垃圾处理量数据,市级区级实时垃圾处理量数据(总包)++
+					Set<String> xzqh = xzqhmap.keySet();
+					for (String xzqh_str : xzqh) {
+						if(xzqh_str.equals("420100000000")){
+							SanitationlListener.CCLJWEIGHT_WEEK.put("ccljweightweek_420100000000", CCLJWEIGHTWEEK);	
+							SanitationlListener.CCLJWEIGHT_NOW.put("ccljweightnow_420100000000",SanitationlListener.CCLJWEIGHTNOW);
+						}else{
+							String xzqhs = xzqhmap.get(xzqh_str);
+							if(xzqhs.equals("武汉经济技术开发区"))
+								xzqhs="武汉开发区";
+							if(xzqhs.equals("武汉东湖新技术开发区"))
+								xzqhs="东湖高新区";
+							if(xzqhs.equals("东湖生态旅游风景区管委会"))
+								xzqhs="东湖风景区";
+							List<GetCcljWeight> weightByXzqh = getCcljWeightService.getWeightByXzqh(xzqhs);
+							JsonArray ccljweight_array=new JsonArray();
+							for (GetCcljWeight g : weightByXzqh) {
+								JsonObject jo=new JsonObject();
+								jo.put("time", g.getTime());
+								jo.put("weight", g.getWeight());
+								jo.put("name", g.getOrgname());
+								ccljweight_array.add(jo);
+							}
+							List<GetCcljWeight> weightOrgnameByXzqh = getCcljWeightService.getWeightOrgnameByXzqh(xzqhs);
+							JsonArray weightOrgnameByXzqh_array=new JsonArray();
+							for (GetCcljWeight getCcljWeight : weightOrgnameByXzqh) {
+								JsonObject jo=new JsonObject();
+								jo.put("key", getCcljWeight.getTimes());
+								jo.put("weight", getCcljWeight.getWeight());
+								weightOrgnameByXzqh_array.add(jo);
+							}
+							SanitationlListener.CCLJWEIGHT_WEEK.put("ccljweightweek_"+xzqh_str,ccljweight_array );	
+							SanitationlListener.CCLJWEIGHT_NOW.put("ccljweightnow_"+xzqh_str,weightOrgnameByXzqh_array);
+						}
+					}
+					//市级餐厨垃圾当日处理总量++
+					/*Double weight_sum = getCcljWeightService.getWeight_sum("全市");
+					JsonObject jo=new JsonObject();
+					jo.put("weight_sum", weight_sum);
+					SanitationlListener.CCLJWEIGHTSUM=jo;*/
+
+					log.info("环卫推送初始化查询助手太累了，休息30秒钟！");
+					Thread.sleep(30000);
+				} catch (Exception e) {
+					log.error("环卫推送初始化查询失败!" + e.getMessage());
+					continue;
+				}
+			}
+		});
+	}
+			
+}

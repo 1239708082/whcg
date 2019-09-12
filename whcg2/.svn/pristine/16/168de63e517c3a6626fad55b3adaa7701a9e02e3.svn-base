@@ -1,0 +1,54 @@
+package com.ltsk.whcg.base.mapper;
+
+import com.ltsk.whcg.entity.Cyyycginfo;
+import com.ltsk.whcg.entity.LampBlack;
+import com.ltsk.whcg.entity.Muck;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 油烟单位
+ */
+@Repository
+public interface FumeUnitMapper {
+
+//    @Select("select * from CYYYCGINFO")
+	@Select({"<script>",
+        "SELECT * FROM CYYYCGINFO t",
+        "WHERE 1=1",
+        "<when test='xzqh!=null'>",
+        "AND district = #{xzqh}",
+        "</when>",
+        "</script>"})
+    List<Cyyycginfo> getAll(@Param("xzqh")String xzqh);
+
+//	@Select("select * from SSYYBJXX t ,
+//	CYYYCGINFO b where t.hotelname=b.hotelname and  t.alarmtime > trunc(sysdate) 
+//			order by t.alarmtime desc")
+	@Select({"<script>",
+        "SELECT t.alarmvalue alarmvalue,t.hotelname hotelname,t.alarmtime alarmtime,t.alarmtype alarmtype,b.gdx x ,b.gdy y FROM SSYYBJXX t ,CYYYCGINFO b ",
+        "WHERE t.hotelname=b.hotelname and  t.alarmtime > trunc(sysdate) ",
+        "<when test='xzqh!=null'>",
+        "AND b.district = #{xzqh}",
+        "</when>",
+        "order by t.alarmtime desc",
+        "</script>"})
+	List<LampBlack> getTampBlackInfo(@Param("xzqh")String xzqh);
+	
+//	餐饮油烟单位近7天违规数
+//	@Select("select trunc(alarmtime) as alarmtime,count(*) as num from SSYYBJXX where trunc(alarmtime)>= trunc(sysdate)-7 and hotelname like '%#{xzqh}%' group by trunc(alarmtime)")
+	@Select({"<script>",
+        "SELECT trunc(alarmtime) as alarmtime,count(*) as num FROM SSYYBJXX t",
+        "where trunc(alarmtime)>= trunc(sysdate)-7",
+        "<when test='xzqh!=null'>",
+        "hotelname like '%#{xzqh}%'",
+        "</when>",
+        "group by trunc(alarmtime)",
+        "</script>"})
+	public List<Map<String, Object>> getViolationNum(@Param("xzqh")String xzqh);
+}

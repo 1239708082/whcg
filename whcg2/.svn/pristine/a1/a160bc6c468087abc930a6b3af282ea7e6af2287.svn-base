@@ -1,0 +1,49 @@
+package com.ltsk.whcg.listener;
+
+import java.util.*;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import com.ltsk.whcg.entity.XZQH;
+import com.ltsk.whcg.service.XZQHService;
+
+import lombok.extern.slf4j.Slf4j;
+
+@WebListener
+@Slf4j
+@Component
+@Order(1)
+public class XZQHListener implements ServletContextListener {
+	@Autowired
+	private XZQHService xzqhService;
+
+	public static Map<String, String> XZQHMap = new LinkedHashMap<>();
+
+	@Override
+	public void contextDestroyed(ServletContextEvent arg0) {
+
+	}
+
+	@Override
+	public void contextInitialized(ServletContextEvent servletContextEvent) {
+		WebApplicationContextUtils.getRequiredWebApplicationContext(servletContextEvent.getServletContext())
+				.getAutowireCapableBeanFactory().autowireBean(this);
+		try {
+			List<XZQH> all = xzqhService.getAll();
+			for (int i = 0; i < all.size(); i++) {
+				XZQHMap.put(all.get(i).getNo(), all.get(i).getName());
+			}
+			log.info("行政区划初始化成功！！");
+		} catch (Exception e) {
+			log.error("行政区划初始化失败!" + e.getMessage());
+		}
+	}
+
+}

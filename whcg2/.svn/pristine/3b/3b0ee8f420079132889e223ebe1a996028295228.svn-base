@@ -1,0 +1,71 @@
+package com.ltsk.whcg.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ltsk.whcg.entity.GetCcljWeight;
+import com.ltsk.whcg.entity.User;
+import com.ltsk.whcg.listener.XZQHListener;
+import com.ltsk.whcg.service.GetCcljWeightService;
+import com.ltsk.whcg.service.XZQHService;
+import com.ltsk.whcg.utils.DateTime;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+
+/**
+ * zd
+ */
+@RestController
+public class GetCcljczController {
+	@Autowired
+	private GetCcljWeightService getCcljWeightService;
+
+	// 获得一周餐厨垃圾处理量
+	@RequestMapping("/getCcljWeight")
+	public Result getWright() {
+		List<List<GetCcljWeight>> weight = getCcljWeightService.getWeight();
+		return ResultUtils.success(weight);
+	}
+
+	@RequestMapping("/getWeightOrgname")
+	public Result getCcljWeightMapper() {
+		List<GetCcljWeight> wrightOrgname = getCcljWeightService.getWrightOrgname();
+		return ResultUtils.success(wrightOrgname);
+	}
+
+	// 获得区级一周餐厨垃圾处理量
+	@RequestMapping("/getWeightByXzqh")
+	public Result getWeightByXzqh(HttpSession session) {
+		User user = (User) session.getAttribute("user");
+		String xzqh = XZQHListener.XZQHMap.get(user.getXzqh());
+		List<GetCcljWeight> weightByXzqh = getCcljWeightService.getWeightByXzqh(xzqh);
+		return ResultUtils.success(weightByXzqh);
+	}
+
+	// 获得区级当日24小时实时统计数据
+	@RequestMapping("/getWeightOrgnameByXzqh")
+	public Result getWeightOrgnameByXzqh(HttpSession session) {
+		User user = (User) session.getAttribute("user");
+		String xzqh = XZQHListener.XZQHMap.get(user.getXzqh());
+		List<GetCcljWeight> weightOrgnameByXzqh = getCcljWeightService.getWeightOrgnameByXzqh(xzqh);
+		return ResultUtils.success(weightOrgnameByXzqh);
+	}
+
+	// 获得用户今天餐厨垃圾处理总量(市级，区级都适用)
+	@RequestMapping("/getWeight_sum")
+	public Result getWeight_sum(HttpSession session) {
+		User user = (User) session.getAttribute("user");
+		if (user == null)
+			return ResultUtils.error("请先登录");
+		String xzqh = XZQHListener.XZQHMap.get(user.getXzqh());
+		return ResultUtils.success(getCcljWeightService.getWeight_sum(xzqh));
+	}
+}

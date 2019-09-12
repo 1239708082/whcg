@@ -1,0 +1,20 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.GarbageNow;
+import com.ltsk.whcg.entity.Gfczzd;
+import com.ltsk.whcg.entity.LastWeekSHLJ;
+
+import java.util.List;
+import java.util.Map;
+
+public interface HouseholdGarbageFactoryService {
+
+    List<Gfczzd> getAll(String xzqhname);
+
+    List<List<LastWeekSHLJ>> getLastWeek(String xzqh);
+
+	List<GarbageNow> getNowGarbage(String xzqh);
+
+	Object getSumGarbage(String xzqh);
+
+}

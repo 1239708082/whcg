@@ -1,0 +1,58 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.GasStationService;
+import com.ltsk.whcg.utils.PositionUtil;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.GasStationMapper;
+import com.ltsk.whcg.entity.Gasstation;
+import com.ltsk.whcg.entity.Gps;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class GasStationServiceImpl implements GasStationService {
+
+    @Autowired
+    private GasStationMapper gasStationMapper;
+    @Override
+    public List<Gasstation> getAll(String type,String xzqh) {
+        String param = "";
+        if ("0".equals(type)) {
+            param =  "门站";
+        } else if ("1".equals(type)) {
+            param = "加气站";
+        } else if ("2".equals(type)) {
+            param =  "储配站";
+        } else if ("3".equals(type)) {
+            param = "供应站";
+        }
+        Map<String,String> map  = XZQHListener.XZQHMap;
+        xzqh = map.get(xzqh);
+        if("全市".equals(xzqh)){
+        	 xzqh=null;
+         }
+        try {
+        	List<Gasstation> byType = gasStationMapper.getByType(param,xzqh);
+        	if(byType.size()<1)
+     			return new ArrayList<>();
+//			for (Gasstation gasstation : byType) {
+//				Gps xy84 = PositionUtil.gcj_To_Gps84(Double.parseDouble(gasstation.getGdy()), Double.parseDouble(gasstation.getGdx()));
+//				gasstation.setGdx(xy84.getWgLon()+"");
+//				gasstation.setGdy(xy84.getWgLat()+"");
+//			}
+        	return byType;
+		} catch (Exception e) {
+			log.error("门站或加气站或储配站或供应站信息查询失败!!");
+			return  new ArrayList<>();
+		}
+    }
+}

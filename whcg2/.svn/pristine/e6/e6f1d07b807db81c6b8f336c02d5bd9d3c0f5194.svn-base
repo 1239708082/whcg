@@ -1,0 +1,33 @@
+package com.ltsk.whcg.service.impl;
+
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import com.ltsk.whcg.entity.Gps;
+import com.ltsk.whcg.entity.Trash;
+import com.ltsk.whcg.service.TrashService;
+import com.ltsk.whcg.utils.PositionUtil;
+
+@SpringBootTest
+@RunWith(SpringRunner.class)
+public class TrashTest {
+	@Autowired
+	private TrashService trashService;
+	
+	@Test
+	public void getAll(){
+		List<Trash> trash = trashService.getTrash();
+		for (Trash trash2 : trash) {
+			Gps gps84_To_Gcj02 = PositionUtil.gps84_To_Gcj02(Double.parseDouble(trash2.getY()), Double.parseDouble(trash2.getX()));
+			System.out.println(gps84_To_Gcj02);
+			trashService.update_trash(gps84_To_Gcj02.getWgLat()+"", gps84_To_Gcj02.getWgLon()+"",trash2.getId());
+			
+			
+		}
+	}
+}

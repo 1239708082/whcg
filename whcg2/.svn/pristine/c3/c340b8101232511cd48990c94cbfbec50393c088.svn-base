@@ -1,0 +1,48 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.HouseholdGarbageCarService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.HouseholdGarbageCarMapper;
+import com.ltsk.whcg.entity.GfclRealtime;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class HouseholdGarbageCarServiceImpl implements HouseholdGarbageCarService {
+
+    @Autowired
+    private HouseholdGarbageCarMapper householdGarbageCarMapper;
+    @Override
+    public Map<String, Object> getHouseholdGarbageFactoryCar(String xzqh) {
+        try {
+			Map<String, Object> map = new HashMap<String,Object>();
+			 xzqh =  XZQHListener.XZQHMap.get(xzqh);
+             if("全市".equals(xzqh)){
+            	 xzqh=null;
+             }
+             if(xzqh.equals("武汉经济技术开发区"))
+            	 xzqh="武汉开发区";
+             if(xzqh.equals("武汉东湖新技术开发区"))
+            	 xzqh="东湖开发区";
+             if(xzqh.equals("东湖生态旅游风景区管委会"))
+            	 xzqh="东湖风景区";
+			Integer num = householdGarbageCarMapper.count();
+			List<GfclRealtime> data = householdGarbageCarMapper.getAllRealtime("离线",xzqh);
+			map.put("sum",num);
+			map.put("data",data);
+			return map;
+		} catch (Exception e) {
+			log.error("生活垃圾车信息查询失败!!");
+			return new HashMap<String,Object>();
+		}
+    }
+}

@@ -1,0 +1,31 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.KitchenWasteFactoryService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.KitchenWasteFactoryMapper;
+import com.ltsk.whcg.entity.Ccljc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+@Service
+@Slf4j
+public class KitchenWasteFactoryServiceImpl implements KitchenWasteFactoryService {
+
+    @Autowired
+    private KitchenWasteFactoryMapper kitchenWasteFactoryMapper;
+    @Override
+    public List<Ccljc> getAll() {
+    	try{
+            return kitchenWasteFactoryMapper.getAll();
+    	}catch(Exception e){
+    		log.error("获得所有餐厨垃圾厂失败");
+    		return new ArrayList<>();
+    	}
+    }
+}

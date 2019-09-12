@@ -1,0 +1,33 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.SuspicSiteUnloadService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.SuspicSiteUnloadMapper;
+import com.ltsk.whcg.entity.Suspicsiteunload;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class SuspicSiteUnloadServiceImpl implements SuspicSiteUnloadService{
+
+    private static final String NAME = "湖北省武汉市%";
+
+    @Autowired
+    private SuspicSiteUnloadMapper suspicSiteUnloadMapper;
+
+    @Override
+    public List<Suspicsiteunload> getAllByType(String type) {
+    	try{
+            return suspicSiteUnloadMapper.getAll(type,NAME);
+    	}catch(Exception e) {
+    		log.error("获得可疑工地消纳点失败");
+    		return new ArrayList<>();
+    	}
+    }
+}

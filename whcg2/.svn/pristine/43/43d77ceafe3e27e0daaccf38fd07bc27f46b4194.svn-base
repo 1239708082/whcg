@@ -1,0 +1,12 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.Cyyycginfo;
+import com.ltsk.whcg.entity.LampBlack;
+
+import java.util.List;
+
+public interface FumeUnitService {
+    List<Cyyycginfo> getAll(String xzqh);
+
+	List<LampBlack> getTampblack(String xzqh);
+}

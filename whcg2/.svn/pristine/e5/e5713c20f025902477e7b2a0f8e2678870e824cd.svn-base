@@ -1,0 +1,171 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.WarningListService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.entity.GasWarningList;
+import com.ltsk.whcg.entity.StationDetail;
+import com.ltsk.whcg.entity.WarningArea;
+import com.ltsk.whcg.entity.WarningList;
+import com.ltsk.whcg.gas.mapper.WarningListMapper;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class WarningListServiceImpl implements WarningListService {
+
+	@Autowired
+	private WarningListMapper warningListMapper;
+
+	@Override
+	public List<WarningList> getAll() {
+		try {
+			return warningListMapper.getAll();
+		} catch (Exception e) {
+			log.error("获得燃气报警失败");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<GasWarningList> getWarning(String xzqh) {
+		Map<String, String> map = XZQHListener.XZQHMap;
+		List<GasWarningList> gasWarningList = new ArrayList<>();
+			for (String s : map.keySet()) {
+				xzqh = map.get(s);
+				if ("420120000000".equals(s)) {
+					xzqh = "东湖风景区";
+				} else if ("420119000000".equals(s)) {
+					xzqh = "东湖高新区";
+				} else if ("420118000000".equals(s)) {
+					xzqh = "武汉经济开发区";
+				}else if ("420100000000".equals(s)||"420101000000".equals(s)){
+					continue;
+				}
+				GasWarningList gas  = new GasWarningList();
+				Integer todayNum = warningListMapper.getWarningToday(xzqh);
+				Integer yesNum = warningListMapper.getWarningYesterday(xzqh);
+				gas.setTodayDate(Integer.toString(todayNum));
+				gas.setYesterdayDate(Integer.toString(yesNum));
+				gas.setXzqh(xzqh);
+				gasWarningList.add(gas);
+			}
+			Integer todayNum = warningListMapper.getWarningToday("化工区");
+			Integer yesNum = warningListMapper.getWarningYesterday("化工区");
+			GasWarningList gas  = new GasWarningList();
+			gas.setTodayDate(Integer.toString(todayNum));
+			gas.setYesterdayDate(Integer.toString(yesNum));
+			gas.setXzqh("化工区");
+			gasWarningList.add(gas);
+			return gasWarningList;
+	}
+
+	@Override
+	public Map<String,List<StationDetail>> getEqDevice(String xzqh) {
+		Map<String, String> map1 = XZQHListener.XZQHMap;
+		String stXzqh="";
+		String wlXzqh="";
+		if ("420120000000".equals(xzqh)) {
+			wlXzqh = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			wlXzqh = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			wlXzqh = "武汉经济开发区";
+		}else if("420100000000".equals(xzqh)){
+			wlXzqh=null;
+		}else {
+			wlXzqh=map1.get(xzqh);
+		}
+		if("420100000000".equals(xzqh)){
+			stXzqh=null;
+		}else if("420118000000".equals(xzqh)){//经济技术开发区
+			stXzqh="429026";
+		}else if("420120000000".equals(xzqh)){//东湖风景区
+			stXzqh="429027";
+		}else if("420119000000".equals(xzqh)){
+			stXzqh="429028";
+		}else{
+			stXzqh=xzqh.substring(0,6);
+		}
+		Map <String,List<StationDetail>> map = new HashMap<>();
+		List<StationDetail> today =new ArrayList<>();
+		
+		StationDetail sd = new StationDetail();
+		//查询设备正常数
+		sd.setNum(warningListMapper.getNormal(stXzqh));
+		sd.setTitle("设备正常数量");
+		
+		//今日泄漏总数
+		StationDetail sd1 = new StationDetail();
+		sd1.setNum(warningListMapper.getOut(wlXzqh));
+		sd1.setTitle("今日泄露次数");
+		
+		//今日离线站点
+		StationDetail sd2 = new StationDetail();
+		sd2.setNum(warningListMapper.getOffline(stXzqh));
+		sd2.setTitle("今日离线站点");
+		today.add(sd);
+		today.add(sd1);
+		today.add(sd2);
+		map.put("today", today);
+		
+		List<StationDetail> week =new ArrayList<>();
+		StationDetail w = new StationDetail();
+		 //燃气总设备数
+		w.setNum(warningListMapper.getAllEq(stXzqh));
+		w.setTitle("燃气设备总数");
+		week.add(w);
+		//设备正常数
+		StationDetail w1 = new StationDetail();
+		w1.setNum(warningListMapper.getNormal(stXzqh));
+		w1.setTitle("设备正常数量");
+		week.add(w1);
+		 //本周离线次数
+		StationDetail w2 = new StationDetail();
+		w2.setNum(warningListMapper.getOfflineByWeek(wlXzqh));
+		w2.setTitle("本周离线次数");
+		week.add(w2);
+		 //本周泄漏次数
+		StationDetail w3 = new StationDetail();
+		w3.setNum(warningListMapper.getOutByWeek(wlXzqh));
+		w3.setTitle("本周泄露次数");
+		week.add(w3);
+		map.put("week", week);
+		return map;
+	}
+
+	@Override
+	public List<WarningArea> getWarnByXzqh(String xzqh) {
+		 
+		Map<String, String> map = XZQHListener.XZQHMap;
+		map.put("420172000000", "化工区");
+		xzqh = map.get(xzqh);
+		if ("420120000000".equals(xzqh)) {
+			xzqh = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqh = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqh = "武汉经济开发区";
+		}
+		List<WarningArea> list = warningListMapper.getAllByXzqh(xzqh);
+		for (WarningArea w : list) {
+			String a = w.getTime();
+			
+			StringBuilder sb = new StringBuilder(a.substring(4));
+			sb.insert(2, "-");
+			w.setTime(sb.toString());
+		}
+		
+		return list;
+	}
+}

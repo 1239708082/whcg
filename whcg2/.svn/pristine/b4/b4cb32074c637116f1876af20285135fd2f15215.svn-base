@@ -1,0 +1,61 @@
+package com.ltsk.whcg.dataPushFactory;
+
+
+import com.ltsk.whcg.listener.LawListener;
+import com.ltsk.whcg.listener.MunicipalListener;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.shareddata.LocalMap;
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+@Slf4j
+public class LawPushVerticle extends AbstractVerticle {
+
+	private  static JsonArray oldResult = new JsonArray();
+	SimpleDateFormat tdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	SimpleDateFormat udf = new SimpleDateFormat("yyyy/MM/dd");
+	private long stime;
+	private long etime;
+	@Override
+	public void start() {
+		vertx.setPeriodic(30000, id -> {
+			LocalMap<String, Integer> law = vertx.sharedData().getLocalMap("law");
+			// 0表示没有worker在工作
+			if (law.get("law") == 0) {
+				vertx.executeBlocking(future -> {
+					try {
+						vertx.sharedData().getLocalMap("law").put("law", 1);
+						stime = Calendar.getInstance().getTime().getTime() / 1000;
+						JsonArray result = new JsonArray(LawListener.lawInit);
+						future.complete(result);
+					} catch (Exception e) {
+ 						e.printStackTrace();
+						future.fail(e);
+					}
+				}, res -> {
+					if (res.succeeded()) {
+						JsonArray result = (JsonArray) res.result();
+						boolean flag = result.equals(oldResult);
+						//if(!flag){
+							// 推送内容
+							vertx.eventBus().publish("law", result);
+							oldResult = result;
+						//}
+						etime = Calendar.getInstance().getTime().getTime() / 1000;
+						log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送完毕    耗时    "
+								+ (etime - stime) + "  秒   !");
+						vertx.sharedData().getLocalMap("law").put("law", 0);
+					}
+					if (res.failed()) {
+						vertx.sharedData().getLocalMap("law").put("law", 0);
+						log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送失败    耗时    "
+								+ (etime - stime) + "  秒   !");
+					}
+				});
+			}
+		});
+	}
+}

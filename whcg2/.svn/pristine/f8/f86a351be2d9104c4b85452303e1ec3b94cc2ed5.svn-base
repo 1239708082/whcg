@@ -1,0 +1,9 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.Ccljc;
+
+import java.util.List;
+
+public interface KitchenWasteFactoryService {
+    List<Ccljc> getAll();
+}

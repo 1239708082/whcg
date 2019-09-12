@@ -1,0 +1,64 @@
+package com.ltsk.whcg.entity;
+//餐厨油烟报警信息
+public class LampBlack {
+
+	private Integer id;
+	private String hotelname;// 店名
+	private String alarmvalue = "";// 报警值
+	private String alarmtime; // 报警时间
+	private String alarmtype;// 报警类型
+	private String x; //经度
+	private String y;//纬度
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getHotelname() {
+		return hotelname;
+	}
+	public void setHotelname(String hotelname) {
+		this.hotelname = hotelname;
+	}
+	public String getAlarmvalue() {
+		return alarmvalue;
+	}
+	public void setAlarmvalue(String alarmvalue) {
+		this.alarmvalue = alarmvalue;
+	}
+	public String getAlarmtime() {
+		return alarmtime;
+	}
+	public void setAlarmtime(String alarmtime) {
+		this.alarmtime = alarmtime;
+	}
+	public String getAlarmtype() {
+		return alarmtype;
+	}
+	public void setAlarmtype(String alarmtype) {
+		this.alarmtype = alarmtype;
+	}
+	public String getX() {
+		return x;
+	}
+	public void setX(String x) {
+		this.x = x;
+	}
+	public String getY() {
+		return y;
+	}
+	public void setY(String y) {
+		this.y = y;
+	}
+	@Override
+	public String toString() {
+		return "LampBlack [id=" + id + ", hotelname=" + hotelname + ", alarmvalue=" + alarmvalue + ", alarmtime="
+				+ alarmtime + ", alarmtype=" + alarmtype + ", x=" + x + ", y=" + y + "]";
+	}
+
+	
+	
+	
+	
+}

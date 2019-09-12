@@ -1,0 +1,28 @@
+package com.ltsk.whcg.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ltsk.whcg.service.BridgeDefectRecordService;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+
+@RestController
+public class BridgeDefectRecordController {
+	@Autowired
+	private BridgeDefectRecordService bridgeDefectRecordService;
+	
+	@RequestMapping("/getBridgeDefectSumGroupXzqh")
+	public Result getBridgeDefectSum(String xzqh){
+		return ResultUtils.success(bridgeDefectRecordService.getBridgeDefectSumGroupXzqh(xzqh));
+	}
+	
+	@RequestMapping("/getBridgeDefectSumGroupName")
+	public Result getBridgeDefectSumGroupName(String xzqh){
+		return ResultUtils.success(bridgeDefectRecordService.getBridgeDefectSumGroupName(xzqh));
+	}
+}

@@ -1,0 +1,56 @@
+package com.ltsk.whcg;
+
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+import com.ltsk.whcg.sso.SuperviseFilter;
+
+import ssoagent.client.filter.SSOLogout;
+
+
+
+@SpringBootApplication
+@ComponentScan(basePackages = "com.ltsk")
+@ServletComponentScan(value = "com.ltsk.whcg.listener")
+@Configuration
+public class WhcgApplication extends SpringBootServletInitializer{
+
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		return builder.sources(WhcgApplication.class);
+	}
+
+	public static void main(String[] args) {
+		SpringApplication.run(WhcgApplication.class, args);
+	}
+
+//	@Bean
+//	public FilterRegistrationBean filterRegistration() {
+//		//new AuthenFilter();
+//		FilterRegistrationBean registration = new FilterRegistrationBean();
+//		registration.setFilter(new SuperviseFilter());//添加过滤器
+//		registration.addUrlPatterns("/*");//设置过滤路径，/*所有路径
+//		//registration.addInitParameter("properties.path", "WEB-INF\\classes\\ssoconfig.properties");//添加默认参数
+//		registration.setName("SuperviseFilter");//设置优先级
+//		registration.setOrder(2);
+//		return registration;
+//	}
+//	@Bean
+//	public FilterRegistrationBean filterRegistration2() {
+//		FilterRegistrationBean registration = new FilterRegistrationBean();
+//		registration.setFilter(new SSOLogout());//添加过滤器
+//		registration.setName("logout");//设置过滤路径
+//		registration.addUrlPatterns("/logout");//*所有路径
+//		registration.setOrder(1);//设置优先级
+//		return registration;
+//	}
+
+}

@@ -1,0 +1,30 @@
+package com.ltsk.whcg.base.mapper;
+
+import com.ltsk.whcg.entity.GfclRealtime;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface HouseholdGarbageCarMapper {
+
+	 @Select({"<script>",
+	        "SELECT count(*) sum FROM GFCL_REALTIME t",
+	        "WHERE 1=1 ",
+	        "<when test='xzqh_str!=null'>",
+	        "AND xzqhname = #{xzqh_str}",
+	        "</when>",
+	        "</script>"})
+    Integer count(@Param("xzqh_str")String xzqh_str);
+
+    @Select({"<script>",
+        "SELECT * FROM GFCL_REALTIME t",
+        "WHERE t.carstatus != 'null' and carstatus != #{carstatus}",
+        "<when test='xzqh!=null'>",
+        "AND xzqhname = #{xzqh}",
+        "</when>",
+        "</script>"})
+    List<GfclRealtime> getAllRealtime(@Param("carstatus") String carstatus,@Param("xzqh") String xzqh);
+}

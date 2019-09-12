@@ -1,0 +1,18 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.BridgeDefectRecord;
+
+import java.util.List;
+import java.util.Map;
+
+public interface BridgeDefectRecordService {
+	//获得当日桥隧信息
+    List<BridgeDefectRecord> getAll();
+    //获得桥隧病害数分行政区划
+    List<Map<String, Object>> getBridgeDefectSumGroupXzqh(String xzqh);
+    //获得桥隧病害总数
+    Integer getBridgeDefectSum();
+    //获得前10桥隧病害数
+    List<Map<String, Object>> getBridgeDefectSumGroupName(String xzqh);
+    
+}

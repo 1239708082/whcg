@@ -1,0 +1,151 @@
+package com.ltsk.whcg.dataPushFactory;
+
+
+import com.ltsk.whcg.listener.IndexListener;
+import com.ltsk.whcg.listener.SanitationlListener;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+@Slf4j
+public class SanitationlPushVerticle extends AbstractVerticle {
+
+    //可疑工地and消纳点
+    private static JsonArray object2 = null;
+    //生活垃圾各厂一周处理量
+    private static JsonArray object3 = null;
+    //生活垃圾各区实时产生量
+    private static JsonArray object4 = null;
+
+    //餐饮油烟报警信息
+    private static JsonArray object6 = null;
+    //餐厨垃圾各厂一周处理量
+    private static JsonArray object7 = null;
+    //餐厨垃圾各区实时产生量
+    private static JsonArray object8 = null;
+
+
+    SimpleDateFormat tdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    SimpleDateFormat udf = new SimpleDateFormat("yyyy/MM/dd");
+    private long stime;
+    private long etime;
+
+    @Override
+    public void start() {
+        JsonObject result = new JsonObject();
+        long timerID = vertx.setPeriodic(10000, id -> {
+            LocalMap<String, Integer> sanitationl = vertx.sharedData().getLocalMap("sanitationl");
+            // 0表示没有worker在工作
+            if (sanitationl.get("sanitationl") == 0) {
+                vertx.executeBlocking(future -> {
+                    try {
+                        vertx.sharedData().getLocalMap("sanitationl").put("sanitationl", 1);
+                        stime = Calendar.getInstance().getTime().getTime() / 1000;
+                        //可疑工地、可疑消纳点
+                        JsonArray suspic = SanitationlListener.SUSPIC;
+                        result.put("suspic", suspic);
+                        //生活垃圾各厂一周处理量
+                        JsonArray garbageweek = SanitationlListener.GARBAGEWEEK;
+                        result.put("garbageweek", garbageweek);
+                        //生活垃圾各区实时产生量
+                        JsonArray pregarbage = SanitationlListener.PREGARBAGE;
+                        result.put("pregarbage", pregarbage);
+                        //生活垃圾当日处理量
+                        /*JsonObject sumGarbage = SanitationlListener.PREGARBAGESUM;
+                        result.put("sumGarbage", sumGarbage);*/
+                        //油烟报警信息
+                        JsonArray pretampblack = SanitationlListener.PRETAMPBLACK;
+                        result.put("pretampblack", pretampblack);
+
+                        //餐厨垃圾各厂一周处理量
+                        JsonArray ccljweightweek = SanitationlListener.CCLJWEIGHTWEEK;
+                        result.put("ccljweightweek", ccljweightweek);
+
+                        //餐厨垃圾各区实时产生量
+                        JsonArray ccljweightnow = SanitationlListener.CCLJWEIGHTNOW;
+                        result.put("ccljweightnow", ccljweightnow);
+
+                        //餐厨垃圾总量
+                        /*JsonObject ccljweightsum = SanitationlListener.CCLJWEIGHTSUM;
+                        result.put("ccljweightsum", ccljweightsum);*/
+
+                        future.complete(result);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        future.fail(e);
+                    }
+                }, res -> {
+                    if (res.succeeded()) {
+                        JsonObject obj = (JsonObject) res.result();
+                        JsonArray suspic = obj.getJsonArray("suspic");
+                        boolean flag2 = suspic.equals(object2);
+                        //if (!flag2) {
+                            // 推送内容
+                            vertx.eventBus().publish("suspic", suspic);
+                            object2 = suspic;
+                        //}
+
+                        JsonArray garbageweek = obj.getJsonArray("garbageweek");
+                        boolean flag3 = garbageweek.equals(object3);
+                        //if (!flag3) {
+                            // 推送内容
+                            vertx.eventBus().publish("garbageweek", garbageweek);
+                            object3 = garbageweek;
+                        //}
+
+                        JsonArray pregarbage = obj.getJsonArray("pregarbage");
+                        boolean flag4 = pregarbage.equals(object4);
+                        //if (!flag4) {
+                            // 推送内容
+                            vertx.eventBus().publish("pregarbage", pregarbage);
+                            object4 = garbageweek;
+                        //}
+
+                        JsonArray pretampblack = obj.getJsonArray("pretampblack");
+                        boolean flag6 = pretampblack.equals(object6);
+                        //if (!flag6) {
+                            // 推送内容
+                            vertx.eventBus().publish("pretampblack", pretampblack);
+                            object6 = pretampblack;
+                        //}
+
+                        JsonArray ccljweightweek = obj.getJsonArray("ccljweightweek");
+                        boolean flag7 = ccljweightweek.equals(object7);
+                        //if (!flag7) {
+                            // 推送内容
+                            vertx.eventBus().publish("ccljweightweek", ccljweightweek);
+                            object7 = ccljweightweek;
+                        //}
+
+                        JsonArray ccljweightnow = obj.getJsonArray("ccljweightnow");
+                        boolean flag8 = ccljweightweek.equals(object8);
+                        //if (!flag8) {
+                            // 推送内容
+                            vertx.eventBus().publish("ccljweightnow", ccljweightnow);
+                            object8 = ccljweightnow;
+                        //}
+
+
+                        etime = Calendar.getInstance().getTime().getTime() / 1000;
+                        log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送完毕    耗时    "
+                                + (etime - stime) + "  秒   !");
+                        vertx.sharedData().getLocalMap("sanitationl").put("sanitationl", 0);
+                    }
+                    if (res.failed()) {
+                        vertx.sharedData().getLocalMap("sanitationl").put("sanitationl", 0);
+                        log.info(tdf.format(Calendar.getInstance().getTime()) + "  推送失败    耗时    "
+                                + (etime - stime) + "  秒   !");
+                    }
+                });
+            }
+        });
+    }
+}

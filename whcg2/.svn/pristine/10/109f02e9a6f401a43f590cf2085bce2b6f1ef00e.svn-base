@@ -1,0 +1,88 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.BridgeDefectRecordService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.bridge.mapper.BridgeDefectRecordMapper;
+import com.ltsk.whcg.entity.BridgeDefectRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class BridgeDefectRecordServiceImpl implements BridgeDefectRecordService {
+
+	@Autowired
+	private BridgeDefectRecordMapper bridgeDefectRecordMapper;
+
+	@Override
+	public List<BridgeDefectRecord> getAll() {
+		try {
+			return bridgeDefectRecordMapper.getAll();
+		} catch (Exception e) {
+			log.error("获得桥梁病害失败");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<Map<String, Object>> getBridgeDefectSumGroupXzqh() {
+		try {
+			List<Map<String, Object>> result = new ArrayList<>();
+			Integer sum = getBridgeDefectSum();
+			List<Map<String, Object>> bridgeDefectSum = bridgeDefectRecordMapper.getBridgeDefectSumGroupXzqh();
+			for (Map<String, Object> map : bridgeDefectSum) {
+				Map<String, Object> m = new HashMap<>();
+				if(map.get("xzqh").equals("化学工")){
+					map.put("xzqh", "化学工业区");
+				}
+				if(map.get("xzqh").equals("东湖高")){
+					map.put("xzqh", "东湖高新区");
+				}
+				if(map.get("xzqh").equals("东湖风")){
+					map.put("xzqh", "东湖风景区");
+				}
+				if(map.get("xzqh").equals("东西湖")){
+					map.put("xzqh", "东西湖区");
+				}
+				m.put("xzqh", map.get("xzqh"));
+				m.put("sum", map.get("sum"));
+				Double s = ((Integer) map.get("sum") / (double) sum * 100);
+				double ss = (double) Math.round(s * 10) / 10;
+				m.put("percent", ss + "%");
+				result.add(m);
+			}
+			return result;
+		} catch (Exception e) {
+			log.error("获取区域病害数据失败");
+		}
+		return null;
+
+	}
+
+	@Override
+	public Integer getBridgeDefectSum() {
+		try {
+			return bridgeDefectRecordMapper.getBridgeDefectSum();
+		} catch (Exception e) {
+			log.error("获取总病害数失败");
+		}
+		return null;
+	}
+
+	@Override
+	public List<Map<String, Object>> getBridgeDefectSumGroupName() {
+		try {
+			return bridgeDefectRecordMapper.getBridgeDefectSumGroupName();
+		} catch (Exception e) {
+			log.error("获取桥梁病害数量失败");
+		}
+		return null;
+	}
+}

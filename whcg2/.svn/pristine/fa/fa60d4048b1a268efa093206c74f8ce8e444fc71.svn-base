@@ -1,0 +1,18 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.BridgeDefectRecord;
+
+import java.util.List;
+import java.util.Map;
+
+public interface BridgeDefectRecordService {
+
+    List<BridgeDefectRecord> getAll();
+    
+    List<Map<String, Object>> getBridgeDefectSumGroupXzqh(String xzqh);
+    
+    Integer getBridgeDefectSum();
+    
+    List<Map<String, Object>> getBridgeDefectSumGroupName(String xzqh);
+    
+}

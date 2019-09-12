@@ -1,0 +1,154 @@
+package com.ltsk.whcg.entity;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.io.Serializable;
+
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
+public class Ccljcz implements Serializable {
+    private String totalweight;
+
+    //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String weightime;
+
+    private String upid;
+
+    private String neatweight;
+
+    private String devid2;
+
+    private String depname;
+
+    private String oldoperator;
+
+    private String orgname;
+
+    private String isdeleted;
+
+    private String tare;
+
+    private String depid;
+
+    private String licenseplate;
+
+    private static final long serialVersionUID = 1L;
+
+    public String getTotalweight() {
+        return totalweight;
+    }
+
+    public void setTotalweight(String totalweight) {
+        this.totalweight = totalweight == null ? "" : totalweight.trim();
+    }
+
+    public String getWeightime() {
+        return weightime;
+    }
+
+    public void setWeightime(String weightime) {
+        this.weightime = weightime;
+    }
+
+    public String getUpid() {
+        return upid;
+    }
+
+    public void setUpid(String upid) {
+        this.upid = upid == null ? "" : upid.trim();
+    }
+
+    public String getNeatweight() {
+        return neatweight;
+    }
+
+    public void setNeatweight(String neatweight) {
+        this.neatweight = neatweight == null ? "" : neatweight.trim();
+    }
+
+    public String getDevid2() {
+        return devid2;
+    }
+
+    public void setDevid2(String devid2) {
+        this.devid2 = devid2 == null ? "" : devid2.trim();
+    }
+
+    public String getDepname() {
+        return depname;
+    }
+
+    public void setDepname(String depname) {
+        this.depname = depname == null ? "" : depname.trim();
+    }
+
+    public String getOldoperator() {
+        return oldoperator;
+    }
+
+    public void setOldoperator(String oldoperator) {
+        this.oldoperator = oldoperator == null ? "" : oldoperator.trim();
+    }
+
+    public String getOrgname() {
+        return orgname;
+    }
+
+    public void setOrgname(String orgname) {
+        this.orgname = orgname == null ? "" : orgname.trim();
+    }
+
+    public String getIsdeleted() {
+        return isdeleted;
+    }
+
+    public void setIsdeleted(String isdeleted) {
+        this.isdeleted = isdeleted == null ? "" : isdeleted.trim();
+    }
+
+    public String getTare() {
+        return tare;
+    }
+
+    public void setTare(String tare) {
+        this.tare = tare == null ? "" : tare.trim();
+    }
+
+    public String getDepid() {
+        return depid;
+    }
+
+    public void setDepid(String depid) {
+        this.depid = depid == null ? "" : depid.trim();
+    }
+
+    public String getLicenseplate() {
+        return licenseplate;
+    }
+
+    public void setLicenseplate(String licenseplate) {
+        this.licenseplate = licenseplate == null ? "" : licenseplate.trim();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("Hash = ").append(hashCode());
+        sb.append(", totalweight=").append(totalweight);
+        sb.append(", weightime=").append(weightime);
+        sb.append(", upid=").append(upid);
+        sb.append(", neatweight=").append(neatweight);
+        sb.append(", devid2=").append(devid2);
+        sb.append(", depname=").append(depname);
+        sb.append(", oldoperator=").append(oldoperator);
+        sb.append(", orgname=").append(orgname);
+        sb.append(", isdeleted=").append(isdeleted);
+        sb.append(", tare=").append(tare);
+        sb.append(", depid=").append(depid);
+        sb.append(", licenseplate=").append(licenseplate);
+        sb.append(", serialVersionUID=").append(serialVersionUID);
+        sb.append("]");
+        return sb.toString();
+    }
+}

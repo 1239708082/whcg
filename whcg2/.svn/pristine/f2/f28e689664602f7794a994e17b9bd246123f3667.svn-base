@@ -1,0 +1,22 @@
+package com.ltsk.whcg.bridgeDefect.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface BridgeDefectMapper {
+	@Select("select state,count(*) num from MANGER_ZHXTZX.BHM_ALARMINFO t group by t.state")
+	public List<Map<String, Object>> getBridgeDefectNumGroupStatus();
+	
+	@Select("select count(*) 桥梁总数,max(t2.num) 直接管理,count(*)-max(t2.num) 行业监管 from MANGER_ZHXTZX.BHM_BASE_BRIDGECARDINFO t ,(select count(*) num from MANGER_ZHXTZX.BHM_BASE_BRIDGECARDINFO t where manageunit is not null and manageunit like '%城管委%') t2 where manageunit is not null")
+	public Map<String, Object> getBridgeDefectNumGroupUnit();
+	
+	@Select("select nvl(t.buildkind,'其他桥') type,count(*) num from MANGER_ZHXTZX.BHM_BASE_BRIDGECARDINFO t group by t.buildkind")
+	public List<Map<String, Integer>> getBridgeNumGroupBuildkind();
+	
+	@Select("select nvl(t.buildsize,'其他桥') type,count(*) num from MANGER_ZHXTZX.BHM_BASE_BRIDGECARDINFO t group by t.buildsize")
+	public List<Map<String, Integer>> getBridgeNumGroupBuildsize();
+}

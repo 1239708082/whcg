@@ -1,0 +1,96 @@
+package com.ltsk.whcg.entity;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+public class Ccljcydw implements Serializable {
+    private String dwmc;
+
+    private String dwdz;
+
+    private String lxr;
+
+    private String telephone;
+
+    private String xy;
+
+    private String xzqh;
+
+    private BigDecimal id;
+
+    private static final long serialVersionUID = 1L;
+
+    public String getDwmc() {
+        return dwmc;
+    }
+
+    public void setDwmc(String dwmc) {
+        this.dwmc = dwmc == null ? "" : dwmc.trim();
+    }
+
+    public String getDwdz() {
+        return dwdz;
+    }
+
+    public void setDwdz(String dwdz) {
+        this.dwdz = dwdz == null ? "" : dwdz.trim();
+    }
+
+    public String getLxr() {
+        return lxr;
+    }
+
+    public void setLxr(String lxr) {
+        this.lxr = lxr == null ? "" : lxr.trim();
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone == null ? "" : telephone.trim();
+    }
+
+    public String getXy() {
+        return xy;
+    }
+
+    public void setXy(String xy) {
+        this.xy = xy == null ? "" : xy.trim();
+    }
+
+    public String getXzqh() {
+        return xzqh;
+    }
+
+    public void setXzqh(String xzqh) {
+        this.xzqh = xzqh == null ? "" : xzqh.trim();
+    }
+
+    public BigDecimal getId() {
+        return id;
+    }
+
+    public void setId(BigDecimal id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("Hash = ").append(hashCode());
+        sb.append(", dwmc=").append(dwmc);
+        sb.append(", dwdz=").append(dwdz);
+        sb.append(", lxr=").append(lxr);
+        sb.append(", telephone=").append(telephone);
+        sb.append(", xy=").append(xy);
+        sb.append(", xzqh=").append(xzqh);
+        sb.append(", id=").append(id);
+        sb.append(", serialVersionUID=").append(serialVersionUID);
+        sb.append("]");
+        return sb.toString();
+    }
+}

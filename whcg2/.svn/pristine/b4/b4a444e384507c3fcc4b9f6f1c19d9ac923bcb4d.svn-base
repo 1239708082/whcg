@@ -1,0 +1,46 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.KitchenWasteCarService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.KitchenWasteCarMapper;
+import com.ltsk.whcg.entity.Ccsyc;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class KitchenWasteCarServiceImpl implements KitchenWasteCarService {
+
+    @Autowired
+    private KitchenWasteCarMapper kitchenWasteCarMapper;
+    @Override
+    public List<Ccsyc> getAll(String xzqh) {
+    	String xzqh_name = XZQHListener.XZQHMap.get(xzqh);
+        try {
+        	if(("全市").equals(xzqh_name)){
+        		xzqh_name=null;
+        	}
+			return kitchenWasteCarMapper.getAll(xzqh_name);
+		} catch (Exception e) {
+        	e.printStackTrace();
+			log.error("餐厨垃圾车信息查询失败!!");
+			return new ArrayList<>();
+		}
+    }
+	@Override
+	public Integer get_sum(String xzqh) {
+		try{
+			return kitchenWasteCarMapper.get_sum(xzqh);
+		}catch (Exception e) {
+			log.error("查询所有餐厨垃圾车总条数失败");
+			return null;
+		}
+	}
+}

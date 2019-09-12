@@ -1,0 +1,205 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.HouseholdGarbageFactoryService;
+import com.ltsk.whcg.utils.DateTime;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.HouseholdGarbageFactoryMapper;
+import com.ltsk.whcg.entity.GarbageNow;
+import com.ltsk.whcg.entity.Gfczzd;
+import com.ltsk.whcg.entity.LastWeekSHLJ;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class HouseholdGarbageFactoryServiceImpl implements HouseholdGarbageFactoryService {
+
+	@Autowired
+	private HouseholdGarbageFactoryMapper householdGarbageFactoryMapper;
+
+	@Override
+	public List<Gfczzd> getAll(String xzqhname) {
+		String string_xzqh = XZQHListener.XZQHMap.get(xzqhname);
+		try {
+			if (string_xzqh.equals("全市")) {
+				string_xzqh = null;
+			}
+			return householdGarbageFactoryMapper.getAll(string_xzqh);
+		} catch (Exception e) {
+			log.error("生活垃圾处理厂信息查询失败!!");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<List<LastWeekSHLJ>> getLastWeek(String xzqh) {
+
+		List<List<LastWeekSHLJ>> days = new ArrayList<>();
+		try {
+			if ("420100000000".equals(xzqh) || "420101000000".equals(xzqh)) {
+
+				List<LastWeekSHLJ> day = householdGarbageFactoryMapper.getLastWeek();
+
+				List<String> nameList = new ArrayList<>();
+				for (LastWeekSHLJ lastWeekSHLJ : day) {
+					lastWeekSHLJ.setDay(lastWeekSHLJ.getDay().substring(5));
+
+					if (!nameList.contains(lastWeekSHLJ.getHandleunit())) {
+						nameList.add(lastWeekSHLJ.getHandleunit());
+					}
+				}
+
+				for (String namelist : nameList) {
+					List<LastWeekSHLJ> day1 = new ArrayList<>();
+					List<LastWeekSHLJ> result = new ArrayList<>();
+					// 将所有厂分开成一个厂一个LIST
+					for (LastWeekSHLJ lastWeekSHLJ : day) {
+						if (lastWeekSHLJ.getHandleunit().equals(namelist)) {
+							day1.add(lastWeekSHLJ);
+						}
+					}
+					// 7天内有的时间没数据,通过日期来判断,没有的补0
+					for (int i = 7; i >=1; i--) {
+						LastWeekSHLJ lw = new LastWeekSHLJ();
+						lw.setDay(DateTime.getPastDate(i));
+						lw.setNetweight("0.00");
+						lw.setHandleunit(namelist);
+						result.add(lw);
+					}
+					for (LastWeekSHLJ res : result) {
+						for (LastWeekSHLJ old : day1) {
+							if (res.getDay().equals(old.getDay())) {
+								res.setHandleunit(old.getHandleunit());
+								res.setNetweight(old.getNetweight());
+							}
+						}
+					}
+
+					days.add(result);
+
+				}
+
+				return days;
+			} else {
+
+				if ("420120000000".equals(xzqh)) {
+					xzqh = "东湖风景区";
+				} else if ("420119000000".equals(xzqh)) {
+					xzqh = "东湖开发区";
+				} else if ("420118000000".equals(xzqh)) {
+					xzqh = "武汉开发区";
+				} else {
+					xzqh = XZQHListener.XZQHMap.get(xzqh);
+					if (xzqh == null || "".equals(xzqh)) {
+						return new ArrayList<>();
+					}
+				}
+				List<LastWeekSHLJ> xzqhDate = householdGarbageFactoryMapper.getLastWeekByXzqh(xzqh);
+				for (LastWeekSHLJ lastWeekSHLJ : xzqhDate) {
+					lastWeekSHLJ.setDay(lastWeekSHLJ.getDay().substring(5));
+				}
+				// 结果集
+				List<LastWeekSHLJ> result = new ArrayList<>();
+				// 创建最近7天的空数据,初始化赋值
+				for (int i = 7; i >=1; i--) {
+					LastWeekSHLJ lw = new LastWeekSHLJ();
+					lw.setDay(DateTime.getPastDate(i));
+					lw.setNetweight("0.00");
+					lw.setHandleunit(xzqhDate.get(0).getHandleunit());
+					result.add(lw);
+				}
+				// 讲查出来的数据和结果集做比较然后
+				for (LastWeekSHLJ res : result) {
+					for (LastWeekSHLJ old : xzqhDate) {
+						if (res.getDay().equals(old.getDay())) {
+							res.setNetweight(old.getNetweight());
+						}
+					}
+				}
+				days.add(result);
+				return days;
+			}
+		} catch (Exception e) {
+			log.error("生活垃圾处理厂前七日信息查询失败!!");
+			e.printStackTrace();
+			return new ArrayList<>();
+
+		}
+
+	}
+
+	// 获得生活垃圾处理厂实时信息
+	@Override
+	public List<GarbageNow> getNowGarbage(String xzqh) {
+		try {
+			if ("420100000000".equals(xzqh)) {
+
+				List<GarbageNow> list = householdGarbageFactoryMapper.getPresentGarbage();
+				return list;
+			} else {
+				if ("420120000000".equals(xzqh)) {
+					xzqh = "东湖风景区";
+				} else if ("420119000000".equals(xzqh)) {
+					xzqh = "东湖开发区";
+				} else if ("420118000000".equals(xzqh)) {
+					xzqh = "武汉开发区";
+				} else {
+					xzqh = XZQHListener.XZQHMap.get(xzqh);
+				}
+
+				List<GarbageNow> result = new ArrayList<>();
+				List<GarbageNow> list = householdGarbageFactoryMapper.getPerByXzqh(xzqh);
+				if(list.size()<1){
+					return new ArrayList<GarbageNow>();
+				}
+				for (int i = 0; i < 12; i++) {
+					GarbageNow gn = new GarbageNow();
+					gn.setXzqh(i * 2 + "~" + (i + 1) * 2);
+					gn.setWeigh(0.0 + "");
+					result.add(gn);
+				}
+				for (int j = 0; j < list.size(); j++) {// 8
+					list.get(j).setTime(j * 2 + "~" + (j + 1) * 2);
+				}
+				for (int i = 0; i < result.size(); i++) {// 12
+					for (int j = 0; j < list.size(); j++) {// 8
+						if (result.get(i).getXzqh().equals(list.get(j).getTime())) {
+							result.get(i).setWeigh(list.get(j).getWeigh());
+						}
+					}
+				}
+				return result;
+			}
+		} catch (Exception e) {
+			log.error("生活垃圾处理厂实时信息查询失败!!");
+			e.printStackTrace();
+			return new ArrayList<>();
+
+		}
+
+	}
+
+	// 查询今日垃圾总量
+	@Override
+	public Object getSumGarbage(String xzqh) {
+
+		xzqh = XZQHListener.XZQHMap.get(xzqh);
+		try {
+			if (xzqh.equals("全市")) {
+				xzqh = null;
+			}
+			return householdGarbageFactoryMapper.getSumGarbage(xzqh);
+		} catch (Exception e) {
+			log.error("生活垃圾处理厂信息查询失败!!");
+			return null;
+		}
+	}
+
+}

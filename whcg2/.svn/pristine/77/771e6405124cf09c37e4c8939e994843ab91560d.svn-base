@@ -1,0 +1,11 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.Muck;
+
+import java.util.List;
+
+public interface MuckService {
+
+    List<Muck> getAll();
+    Integer get_sum();
+}

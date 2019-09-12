@@ -1,0 +1,123 @@
+package com.ltsk.whcg.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ltsk.whcg.entity.Server;
+import com.ltsk.whcg.service.ServiceManagementService;
+import com.ltsk.whcg.utils.Result;
+import com.ltsk.whcg.utils.ResultUtils;
+import com.ltsk.whcg.zhjg.mapper.ServiceManageMapper;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+@RestController
+public class ServiceManagementController {
+	@Autowired
+	private ServiceManageMapper mapper;
+	@Autowired
+	private ServiceManagementService serviceManagementService;
+	@Autowired
+	private StringRedisTemplate template;
+
+//	查询所有服务信息
+	@RequestMapping("servicename")
+	public Result listServiceName(HttpSession session) {
+		String string = template.opsForValue().get(session.getId());
+//		System.out.println(session.getId()+"============");
+		List<Server> list = new ArrayList<Server>();
+//		Object attribute = session.getAttribute("user");
+//		System.out.println(attribute);
+
+		JSONObject fromObject = JSONObject.fromObject(string);
+		String username = (String) fromObject.get("username");
+//		System.out.println(username);
+
+//		String username="admin";
+		list = mapper.listAllServiceName();
+
+//		String fwname = mapper.getFwname(username);
+		List<String> fwname = mapper.listServerByUsername(username);
+		System.out.println(fwname.size());
+		int a = 1;
+		if (fwname == null || fwname.get(0).equals("")) {
+//			循环遍历服务信息，添加使用状态
+			for (int i = 0; i < list.size(); i++) {
+				Server server = new Server();
+				server = list.get(i);
+				server.setId(a + "");
+				server.setStateType("0");
+				list.set(i, server);
+				a++;
+			}
+
+		} else {
+
+//			循环遍历服务信息，添加使用状态
+			for (int i = 0; i < list.size(); i++) {
+				Server server = new Server();
+				server = list.get(i);
+				server.setId(a + "");
+				server.setStateType("0");
+
+				for (int j = 0; j < fwname.size(); j++) {
+					if (list.get(j).getName().equals(fwname.get(j))) {
+						server.setStateType("1");
+						break;
+					}
+				}
+				list.set(i, server);
+				a++;
+			}
+		}
+
+		Result success = ResultUtils.success(list);
+		return success;
+	}
+
+//  查询对应服务地址、参数、调用说明
+//	@RequestMapping("serviceinfo")
+//	public Result getServiceInfo(@RequestParam String id) {
+//		Server server = mapper.getServiceInfo(id);
+//		if (server!=null) {
+//			JSONObject fromObject = JSONObject.fromObject(server);
+//			Result success = ResultUtils.success(fromObject);
+//			return success;
+//		}
+//        Result error = ResultUtils.error("没有此服务详情");
+//        return error;
+//	}
+
+//  查询所有服务使用频次统计情况(时间段)
+	@RequestMapping("servicestatistics")
+	public Result listUseServiceStatistics() {
+		List<String> serverCountSelrvice = serviceManagementService.getServerCountSelrvice();
+		Result success = ResultUtils.success(serverCountSelrvice);
+		return success;
+	}
+
+//	服务类型
+	@RequestMapping("servicestatistics1")
+	public Result listUseServiceStatistics1() {
+		List<Map<String, Integer>> list = serviceManagementService.getServerCountByServerType();
+		Result success = ResultUtils.success(list);
+		return success;
+	}
+
+//	行政区划
+	@RequestMapping("servicestatistics2")
+	public Result listUseServiceStatistics2() {
+		List<Map<String, Integer>> list = serviceManagementService.getServerCountByUserType();
+		Result success = ResultUtils.success(list);
+		return success;
+	}
+}

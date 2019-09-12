@@ -1,0 +1,448 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.IndexService;
+
+import com.ltsk.whcg.utils.DateTime;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
+import oracle.net.aso.s;
+
+import com.ltsk.whcg.base.mapper.GetCcljWeightMapper;
+import com.ltsk.whcg.base.mapper.HouseholdGarbageFactoryMapper;
+import com.ltsk.whcg.base.mapper.IndexMapper;
+import com.ltsk.whcg.base.mapper.KitchenWasteCarMapper;
+import com.ltsk.whcg.bridge.mapper.BridgeDefectRecordMapper;
+import com.ltsk.whcg.digital.mapper.BuildingMapper;
+import com.ltsk.whcg.digital.mapper.NoiseMapper;
+import com.ltsk.whcg.entity.Ccljcz;
+import com.ltsk.whcg.entity.GarbageNow;
+import com.ltsk.whcg.entity.GasWarningList;
+import com.ltsk.whcg.entity.StationDetail;
+import com.ltsk.whcg.entity.WarningArea;
+import com.ltsk.whcg.gas.mapper.WarningListMapper;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+@Service
+@Slf4j
+public class IndexServiceImpl implements IndexService {
+
+	@Autowired
+	private IndexMapper indexMapper;
+
+	@Autowired
+	private BuildingMapper buildingMapper;
+
+	@Autowired
+	private NoiseMapper noiseMapper;
+
+	@Autowired
+	private BridgeDefectRecordMapper bridgeDefectRecordMapper;
+
+	@Autowired
+	private WarningListMapper warningListMapper;
+
+	@Autowired
+	private KitchenWasteCarMapper kitchenWasteCarMapper;
+
+	@Autowired
+	private GetCcljWeightMapper ccljMapper;
+
+	@Autowired
+	private HouseholdGarbageFactoryMapper hhgMapper;
+
+	@Autowired
+	private FumeUnitServiceImpl fuService;
+
+	@Autowired
+	private BridgeDefectRecordServiceImpl bdrService;
+
+	// 环卫主题
+	@Override
+	public List<Object> getSanitationl(String xzqh) {
+		List<Object> result = new ArrayList<Object>();
+
+		// 生活垃圾各厂实时进厂量
+		try {
+			List<GarbageNow> gn = hhgMapper.getByHandle();
+			Map<String, Object> gnMap = new HashMap<>();
+			if (gn.size() < 1) {
+				gnMap.put("text1", "生活垃圾各厂实时进厂量");
+				List<Map<String,String>> gar = new ArrayList<>();
+				List<String> handleunit = hhgMapper.handleunit();
+				for (String string : handleunit) {
+					Map m = new HashMap<>();
+					m.put("xzqh", string);
+					m.put("weigh", "0.0");
+				}
+				gnMap.put("num1", new ArrayList<>());
+				result.add(gnMap);
+			} else {
+				List<Map<String, String>> gn1 = new ArrayList<>();
+				for (GarbageNow c : gn) {
+					Map<String, String> jo = new HashMap<>();
+					jo.put("weigh", c.getWeigh());
+					jo.put("xzqh", c.getXzqh());
+					gn1.add(jo);
+				}
+				gnMap.put("text1", "生活垃圾各厂实时进厂量");
+				gnMap.put("num1", gn1);
+				result.add(gnMap);
+			}
+
+			// 餐饮油烟单位今日报警次数类型
+			List<Map<String, Object>> fuList = fuService.getViolationNum(xzqh);
+			for (Map<String, Object> map : fuList) {
+				map.put("NUM", map.get("NUM") + "");
+			}
+			Map<String, Object> fuMap = new HashMap<>();
+			fuMap.put("text1", "餐饮油烟今日报警类型信息");
+			fuMap.put("num1", fuList);
+			result.add(fuMap);
+			return result;
+		} catch (Exception e) {
+			log.error("首页环卫主题信息获取失败..");
+			return new ArrayList<>();
+		}
+	}
+
+	// 执法主题
+//	@Override
+//	public List<Object> getLaw(String xzqh) {
+//		List<Object> result = new ArrayList<Object>();
+//		String xzqhname = "";
+//
+//		// 违章建筑数
+//		if ("420120000000".equals(xzqh)) {
+//			xzqhname = "东湖风景区";
+//		} else if ("420119000000".equals(xzqh)) {
+//			xzqhname = "东湖高新技术开发区";
+//		} else if ("420118000000".equals(xzqh)) {
+//			xzqhname = "武汉经济开发区";
+//		} else if ("420100000000".equals(xzqh)) {
+//			xzqhname = null;
+//		} else {
+//			xzqhname = XZQHListener.XZQHMap.get(xzqh);
+//		}
+//		Integer buildingNum = buildingMapper.getBuildingNum(xzqhname);
+//		Map<String, Object> buildingMap = new HashMap<>();
+//		buildingMap.put("text1", "违章建筑事件数");
+//		buildingMap.put("num1", buildingNum);
+//		buildingMap.put("text2", "");
+//		buildingMap.put("num2", "");
+//		result.add(buildingMap);
+//		// 施工扰民数
+//		Integer noiseNum = noiseMapper.getNoiseNum(xzqhname);
+//		Map<String, Object> noiseMap = new HashMap<>();
+//		noiseMap.put("text1", "工地噪声事件数");
+//		noiseMap.put("num1", noiseNum);
+//		noiseMap.put("text2", "");
+//		noiseMap.put("num2", "");
+//		result.add(noiseMap);
+//
+//		return result;
+//	}
+
+	// 市政设施
+	@Override
+	public List<Object> getMunicipal(String xzqh) {
+		List<Object> result = new ArrayList<Object>();
+
+		Map<String, String> map1 = XZQHListener.XZQHMap;
+		String stXzqh = "";
+		String wlXzqh = "";
+		if ("420120000000".equals(xzqh)) {
+			wlXzqh = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			wlXzqh = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			wlXzqh = "武汉经济开发区";
+		} else if ("420100000000".equals(xzqh)) {
+			wlXzqh = null;
+		} else {
+			wlXzqh = map1.get(xzqh);
+		}
+		if ("420100000000".equals(xzqh)) {
+			stXzqh = null;
+		} else if ("420118000000".equals(xzqh)) {// 经济技术开发区
+			stXzqh = "429026";
+		} else if ("420120000000".equals(xzqh)) {// 东湖风景区
+			stXzqh = "429027";
+		} else if ("420119000000".equals(xzqh)) {
+			stXzqh = "429028";
+		} else {
+			stXzqh = xzqh.substring(0, 6);
+		}
+
+		// List<StationDetail> today =new ArrayList<>();
+		// StationDetail sd = new StationDetail();
+		try {
+			// 查询设备正常数
+			Map<String, Object> sd = new HashMap<>();
+			sd.put("num", warningListMapper.getNormal(stXzqh));
+			sd.put("title", "设备正常数");
+
+			// 今日泄漏总数
+			// StationDetail sd1 = new StationDetail();
+			Map<String, Object> sd1 = new HashMap<>();
+			sd1.put("num", warningListMapper.getOut(wlXzqh));
+			sd1.put("title", "今日泄露次数");
+
+			// 今日离线站点
+			// StationDetail sd2 = new StationDetail();
+			Map<String, Object> sd2 = new HashMap<>();
+			sd2.put("num", warningListMapper.getOffline(stXzqh));
+			sd2.put("title", "今日离线站点");
+
+			List<Map<String, Object>> todayList = new ArrayList<>();
+			todayList.add(sd);
+			todayList.add(sd1);
+			todayList.add(sd2);
+
+			// 今日燃气站点情况汇总
+			Map<String, Object> gas = new HashMap<>();
+			gas.put("text1", "今日燃气站点情况汇总");
+			gas.put("num1", todayList);
+
+			result.add(gas);
+
+			// 桥梁病害数量
+			List<Map<String, Object>> bridgeList = bdrService.getBridgeDefectSumGroupName(xzqh);
+			Map<String, Object> bridge = new HashMap<>();
+			Date date=new Date();
+			Integer time=Integer.parseInt(DateTime.getYear(date))-2014;
+			bridge.put("text1", "桥梁近"+time+"年病害数量");
+			bridge.put("num1", bridgeList);
+			result.add(bridge);
+			return result;
+		} catch (Exception e) {
+			log.error("首页市政主题信息查询失败..");
+			return new ArrayList<>();
+		}
+
+		// //桥梁巡检数(无法分区)
+		// Integer bridgeDefectRecordNum =
+		// bridgeDefectRecordMapper.getBridgeDefectRecordNum();
+		// Map<String, Object> bridgeDefectRecordMap = new HashMap<>();
+		// bridgeDefectRecordMap.put("text1", "桥梁日常巡检数");
+		// bridgeDefectRecordMap.put("num1", bridgeDefectRecordNum);
+		// bridgeDefectRecordMap.put("text2", "");
+		// bridgeDefectRecordMap.put("num2", "");
+		// result.add(bridgeDefectRecordMap);
+		// //燃气报警数
+		// if ("420120000000".equals(xzqh)) {
+		// xzqhname = "东湖风景区";
+		// } else if ("420119000000".equals(xzqh)) {
+		// xzqhname = "东湖高新区";
+		// } else if ("420118000000".equals(xzqh)) {
+		// xzqhname = "武汉经济开发区";
+		// } else if ("420100000000".equals(xzqh)) {
+		// xzqhname = null;
+		// } else {
+		// xzqhname = XZQHListener.XZQHMap.get(xzqh);
+		// }
+		// Integer gasWarning = warningListMapper.getGasWarning(xzqhname);
+		// Map<String, Object> warningListMap = new HashMap<>();
+		// warningListMap.put("text1", "燃气报警数");
+		// warningListMap.put("num1", gasWarning);
+		// warningListMap.put("text2", "");
+		// warningListMap.put("num2", "");
+		// result.add(warningListMap);
+	}
+
+	@Override
+	public List<Object> getIndex(String xzqh) {
+		List<Object> result = new ArrayList<Object>();
+		String xzqhname = "";
+		// 餐厨油烟违规数
+		if ("420120000000".equals(xzqh)) {
+			xzqhname = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqhname = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqhname = "经开区";
+		} else if ("420114000000".equals(xzqh)) {
+			xzqhname = "蔡甸区";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqhname = null;
+		} else {
+			xzqhname = XZQHListener.XZQHMap.get(xzqh);
+		}
+		Integer fumeAlarm = indexMapper.countFumeAlarm(xzqhname);
+		Map<String, Object> fumeAlarmMap = new HashMap<>();
+		fumeAlarmMap.put("text1", "餐厨油烟违规数");
+		fumeAlarmMap.put("num1", fumeAlarm);
+		fumeAlarmMap.put("text2", "");
+		fumeAlarmMap.put("num2", "");
+		result.add(fumeAlarmMap);
+
+		// 生活垃圾日进场量
+		if ("420120000000".equals(xzqh)) {
+			xzqhname = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqhname = "东湖开发区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqhname = "武汉开发区";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqhname = null;
+		} else {
+			xzqhname = XZQHListener.XZQHMap.get(xzqh);
+		}
+		Double householdGarbage = indexMapper.countHouseholdGarbage(xzqhname);
+		Double value = householdGarbage == null ? 0.0
+				: new BigDecimal(householdGarbage).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+		Map<String, Object> householdGarbageMap = new HashMap<>();
+		householdGarbageMap.put("text1", "生活垃圾日进场总数");
+		householdGarbageMap.put("num1", value + "吨");
+		householdGarbageMap.put("text2", "");
+		householdGarbageMap.put("num2", "");
+		result.add(householdGarbageMap);
+
+		// 生活垃圾运输车在线
+		Integer householdGarbageCar = indexMapper.countHouseholdGarbageCar("行驶在线", "停车在线", xzqhname);
+		// 生活垃圾运输车总量
+		Integer householdGarbageCarSum = indexMapper.countHouseholdGarbageCarSum(xzqhname);
+
+		Map<String, Object> householdGarbageCarMap = new HashMap<>();
+		householdGarbageCarMap.put("text1", "生活垃圾运输车在线数");
+		householdGarbageCarMap.put("num1", householdGarbageCar);
+		householdGarbageCarMap.put("text2", "生活垃圾运输车总数");
+		householdGarbageCarMap.put("num2", householdGarbageCarSum);
+		result.add(householdGarbageCarMap);
+
+		// 餐厨垃圾总进场量
+		if ("420120000000".equals(xzqh)) {
+			xzqhname = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqhname = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqhname = "武汉开发区";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqhname = null;
+		} else {
+			xzqhname = XZQHListener.XZQHMap.get(xzqh);
+		}
+		Double kitchenWaste = indexMapper.countKitchenWaste(xzqhname);
+		Map<String, Object> kitchenWasteMap = new HashMap<>();
+		kitchenWasteMap.put("text1", "餐厨垃圾日进场总数");
+		kitchenWasteMap.put("num1", kitchenWaste == null ? 0 : kitchenWaste / 1000 + "吨");
+		kitchenWasteMap.put("text2", "");
+		kitchenWasteMap.put("num2", "");
+		result.add(kitchenWasteMap);
+
+		// 餐厨垃圾运输车在线
+		if ("420120000000".equals(xzqh)) {
+			xzqhname = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqhname = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqhname = "武汉开发区（";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqhname = null;
+		} else {
+			xzqhname = XZQHListener.XZQHMap.get(xzqh);
+		}
+		Integer kitchenWasteCar = indexMapper.countKitchenWasteCar(xzqhname);
+		if ("420120000000".equals(xzqh)) {
+			xzqhname = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqhname = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqhname = "武汉开发区";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqhname = null;
+		} else {
+			xzqhname = XZQHListener.XZQHMap.get(xzqh);
+		}
+		Integer sum = kitchenWasteCarMapper.get_sum(xzqhname);
+		Map<String, Object> kitchenWasteCarMap = new HashMap<>();
+		kitchenWasteCarMap.put("text1", "餐厨垃圾在线车辆数");
+		kitchenWasteCarMap.put("num1", kitchenWasteCar);
+		kitchenWasteCarMap.put("text2", "餐厨垃圾总车辆数");
+		kitchenWasteCarMap.put("num2", sum);
+		result.add(kitchenWasteCarMap);
+
+		// 获取可疑工地、消纳点数量
+		Integer suspicSiteNum = indexMapper.countSuspicSiteUnloadNum("1", "湖北省武汉市%" + xzqhname + "%");
+		Integer suspicUnloadNum = indexMapper.countSuspicSiteUnloadNum("2", "湖北省武汉市%" + xzqhname + "%");
+		// 获取今日工地数量(无法分区)
+		Integer siteNum = indexMapper.countSiteNum();
+		Map<String, Object> siteMap = new HashMap<>();
+		siteMap.put("text1", "可疑工地数");
+		siteMap.put("num1", suspicSiteNum);
+		siteMap.put("text2", "今日工地数");
+		siteMap.put("num2", suspicSiteNum + siteNum);
+		result.add(siteMap);
+
+		// 获取今日消纳点数量(无法分区)
+		Integer unloadNum = indexMapper.countUnloadNum();
+		Map<String, Object> unloadMap = new HashMap<>();
+		unloadMap.put("text1", "可疑消纳点数");
+		unloadMap.put("num1", suspicSiteNum);
+		unloadMap.put("text2", "今日消纳点数");
+		unloadMap.put("num2", suspicUnloadNum + unloadNum);
+		result.add(unloadMap);
+		// 违章建筑数
+		if ("420120000000".equals(xzqh)) {
+			xzqhname = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqhname = "东湖高新技术开发区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqhname = "武汉经济开发区";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqhname = null;
+		} else {
+			xzqhname = XZQHListener.XZQHMap.get(xzqh);
+		}
+		Integer buildingNum = buildingMapper.getBuildingNum(xzqhname);
+		Map<String, Object> buildingMap = new HashMap<>();
+		buildingMap.put("text1", "违章建筑事件数");
+		buildingMap.put("num1", buildingNum);
+		buildingMap.put("text2", "");
+		buildingMap.put("num2", "");
+		result.add(buildingMap);
+		// 施工扰民数
+		Integer noiseNum = noiseMapper.getNoiseNum(xzqhname);
+		Map<String, Object> noiseMap = new HashMap<>();
+		noiseMap.put("text1", "工地噪声事件数");
+		noiseMap.put("num1", noiseNum);
+		noiseMap.put("text2", "");
+		noiseMap.put("num2", "");
+		result.add(noiseMap);
+
+		// 桥梁巡检数(无法分区)
+		Integer bridgeDefectRecordNum = bridgeDefectRecordMapper.getBridgeDefectRecordNum();
+		Map<String, Object> bridgeDefectRecordMap = new HashMap<>();
+		bridgeDefectRecordMap.put("text1", "桥梁日常巡检数");
+		bridgeDefectRecordMap.put("num1", bridgeDefectRecordNum);
+		bridgeDefectRecordMap.put("text2", "");
+		bridgeDefectRecordMap.put("num2", "");
+		result.add(bridgeDefectRecordMap);
+		// 燃气报警数
+		if ("420120000000".equals(xzqh)) {
+			xzqhname = "东湖风景区";
+		} else if ("420119000000".equals(xzqh)) {
+			xzqhname = "东湖高新区";
+		} else if ("420118000000".equals(xzqh)) {
+			xzqhname = "武汉经济开发区";
+		} else if ("420100000000".equals(xzqh)) {
+			xzqhname = null;
+		} else {
+			xzqhname = XZQHListener.XZQHMap.get(xzqh);
+		}
+		Integer gasWarning = warningListMapper.getGasWarning(xzqh);
+		Map<String, Object> warningListMap = new HashMap<>();
+		warningListMap.put("text1", "燃气报警数");
+		warningListMap.put("num1", gasWarning);
+		warningListMap.put("text2", "");
+		warningListMap.put("num2", "");
+		result.add(warningListMap);
+		return result;
+	}
+}

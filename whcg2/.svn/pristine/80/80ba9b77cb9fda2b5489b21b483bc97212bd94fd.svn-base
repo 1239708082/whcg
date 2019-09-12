@@ -1,0 +1,11 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.BridgeDefectRecord;
+
+import java.util.List;
+
+public interface BridgeDefectRecordService {
+
+    List<BridgeDefectRecord> getAll();
+
+}

@@ -1,0 +1,54 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.FumeUnitService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.FumeUnitMapper;
+import com.ltsk.whcg.entity.Cyyycginfo;
+import com.ltsk.whcg.entity.LampBlack;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class FumeUnitServiceImpl implements FumeUnitService{
+
+    @Autowired
+    private FumeUnitMapper fumeUnitMapper;
+
+    @Override
+    public List<Cyyycginfo> getAll(String xzqh) {
+    	String xzqh_name=XZQHListener.XZQHMap.get(xzqh);
+        try {
+        	if(xzqh_name.equals("全市")){
+        		xzqh_name=null;
+        	}
+			return fumeUnitMapper.getAll(xzqh_name);
+		} catch (Exception e) {
+			log.error("餐厨油烟单位信息查询失败!!");
+			return new ArrayList<>();
+		}
+    }
+
+	@Override
+	public List<LampBlack> getTampblack(String xzqh) {
+		 xzqh=XZQHListener.XZQHMap.get(xzqh);
+		
+		 try {
+			List<LampBlack> list =  fumeUnitMapper.getTampBlackInfo();
+			for (int i = 0; i < list.size(); i++) {
+				list.get(i).setId(i);
+			}
+			 return list ;
+			} catch (Exception e) {
+				log.error("餐厨油烟单位信息查询失败!!");
+				return new ArrayList<>();
+			}
+	}
+}

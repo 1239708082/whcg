@@ -1,0 +1,18 @@
+package com.ltsk.whcg.bridge.mapper;
+
+import com.ltsk.whcg.entity.BridgeDefectRecord;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface BridgeDefectRecordMapper {
+
+    @Select("SELECT * FROM [dbo].[V_Data_Daily_DefectRecord] where DateDiff(dd,CreatedTime,getdate())= 0 order by CreatedTime desc")
+    public List<BridgeDefectRecord> getAll();
+
+    @Select("SELECT count(*) num  FROM [dbo].[V_Data_Daily_DefectRecord] where DateDiff(dd,CreatedTime,getdate())= 0")
+    public int getBridgeDefectRecordNum();
+
+}

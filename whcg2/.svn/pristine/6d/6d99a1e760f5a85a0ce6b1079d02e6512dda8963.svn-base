@@ -1,0 +1,208 @@
+package com.ltsk.whcg.entity;
+
+
+import java.io.Serializable;
+
+public class Ccsyc implements Serializable {
+    private String latitude;
+
+    private String cardperson;
+
+    private String devicename;
+
+    private String speed;
+
+    private String cardid;
+
+    private String angle;
+
+    private String cardtype;
+
+    private String id;
+
+    private String longitude;
+
+    //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String alarmdatestr;
+
+    private String devicecode;
+
+    private String organization;
+
+    private String devicestate;
+
+    private String cardnumber;
+
+    private String gdy;
+
+    private String gdx;
+
+    //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String updatetime;
+
+    private static final long serialVersionUID = 1L;
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude == null ? "" : latitude.trim();
+    }
+
+    public String getCardperson() {
+        return cardperson;
+    }
+
+    public void setCardperson(String cardperson) {
+        this.cardperson = cardperson == null ? "" : cardperson.trim();
+    }
+
+    public String getDevicename() {
+        return devicename;
+    }
+
+    public void setDevicename(String devicename) {
+        this.devicename = devicename == null ? "" : devicename.trim();
+    }
+
+    public String getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(String speed) {
+        this.speed = speed == null ? "" : speed.trim();
+    }
+
+    public String getCardid() {
+        return cardid;
+    }
+
+    public void setCardid(String cardid) {
+        this.cardid = cardid == null ? "" : cardid.trim();
+    }
+
+    public String getAngle() {
+        return angle;
+    }
+
+    public void setAngle(String angle) {
+        this.angle = angle == null ? "" : angle.trim();
+    }
+
+    public String getCardtype() {
+        return cardtype;
+    }
+
+    public void setCardtype(String cardtype) {
+        this.cardtype = cardtype == null ? "" : cardtype.trim();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id == null ? "" : id.trim();
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude == null ? "" : longitude.trim();
+    }
+
+    public String getAlarmdatestr() {
+        return alarmdatestr;
+    }
+
+    public void setAlarmdatestr(String alarmdatestr) {
+        this.alarmdatestr = alarmdatestr;
+    }
+
+    public String getDevicecode() {
+        return devicecode;
+    }
+
+    public void setDevicecode(String devicecode) {
+        this.devicecode = devicecode == null ? "" : devicecode.trim();
+    }
+
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization == null ? "" : organization.trim();
+    }
+
+    public String getDevicestate() {
+        return devicestate;
+    }
+
+    public void setDevicestate(String devicestate) {
+        this.devicestate = devicestate == null ? "" : devicestate.trim();
+    }
+
+    public String getCardnumber() {
+        return cardnumber;
+    }
+
+    public void setCardnumber(String cardnumber) {
+        this.cardnumber = cardnumber == null ? "" : cardnumber.trim();
+    }
+
+    public String getGdy() {
+        return gdy;
+    }
+
+    public void setGdy(String gdy) {
+        this.gdy = gdy == null ? "" : gdy.trim();
+    }
+
+    public String getGdx() {
+        return gdx;
+    }
+
+    public void setGdx(String gdx) {
+        this.gdx = gdx == null ? "" : gdx.trim();
+    }
+
+    public String getUpdatetime() {
+        return updatetime;
+    }
+
+    public void setUpdatetime(String updatetime) {
+        this.updatetime = updatetime;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("Hash = ").append(hashCode());
+        sb.append(", latitude=").append(latitude);
+        sb.append(", cardperson=").append(cardperson);
+        sb.append(", devicename=").append(devicename);
+        sb.append(", speed=").append(speed);
+        sb.append(", cardid=").append(cardid);
+        sb.append(", angle=").append(angle);
+        sb.append(", cardtype=").append(cardtype);
+        sb.append(", id=").append(id);
+        sb.append(", longitude=").append(longitude);
+        sb.append(", alarmdatestr=").append(alarmdatestr);
+        sb.append(", devicecode=").append(devicecode);
+        sb.append(", organization=").append(organization);
+        sb.append(", devicestate=").append(devicestate);
+        sb.append(", cardnumber=").append(cardnumber);
+        sb.append(", gdy=").append(gdy);
+        sb.append(", gdx=").append(gdx);
+        sb.append(", updatetime=").append(updatetime);
+        sb.append(", serialVersionUID=").append(serialVersionUID);
+        sb.append("]");
+        return sb.toString();
+    }
+}

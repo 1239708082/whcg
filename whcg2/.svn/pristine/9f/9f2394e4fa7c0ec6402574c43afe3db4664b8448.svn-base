@@ -1,0 +1,41 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.MuckService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.base.mapper.MuckMapper;
+import com.ltsk.whcg.entity.Muck;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class MuckServiceImpl implements MuckService{
+
+    @Autowired
+    private MuckMapper muckMapper;
+
+    @Override
+    public List<Muck> getAll() {
+    	try{
+            return muckMapper.getAll();
+    	}catch(Exception e){
+    		log.error("获得渣土车失败");
+    		return new ArrayList<>();
+    	}
+    }
+
+	@Override
+	public Integer get_sum() {
+		try{
+			return muckMapper.get_sum();
+		}catch (Exception e) {
+			log.error("获得渣土车总数量失败！！");
+			return null;
+		}
+	}
+}

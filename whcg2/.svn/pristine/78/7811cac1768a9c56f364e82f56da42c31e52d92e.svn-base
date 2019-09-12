@@ -1,0 +1,31 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.BridgeDefectRecordService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.bridge.mapper.BridgeDefectRecordMapper;
+import com.ltsk.whcg.entity.BridgeDefectRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Slf4j
+public class BridgeDefectRecordServiceImpl implements BridgeDefectRecordService {
+
+    @Autowired
+    private BridgeDefectRecordMapper bridgeDefectRecordMapper;
+
+    @Override
+    public List<BridgeDefectRecord> getAll() {
+    	try{
+            return bridgeDefectRecordMapper.getAll();
+    	}catch(Exception e){
+    		log.error("获得桥梁病害失败");
+    		return new ArrayList<>();
+    	}
+    }
+}

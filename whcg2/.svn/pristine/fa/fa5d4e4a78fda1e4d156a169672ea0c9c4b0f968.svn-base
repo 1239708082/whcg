@@ -1,0 +1,14 @@
+package com.ltsk.whcg.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.ltsk.whcg.entity.GetCcljWeight;
+
+public interface GetCcljWeightService {
+	public List<List<GetCcljWeight>> getWeight();
+	public List<GetCcljWeight> getWrightOrgname();
+	public List<GetCcljWeight> getWeightByXzqh(String xzqh);
+	public List<GetCcljWeight> getWeightOrgnameByXzqh(String xzqh);
+	public Double getWeight_sum(String xzqh);
+}

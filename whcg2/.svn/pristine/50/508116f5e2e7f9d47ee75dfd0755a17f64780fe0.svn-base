@@ -1,0 +1,229 @@
+package com.ltsk.whcg.entity;
+
+
+import java.io.Serializable;
+
+public class Ccljcl implements Serializable {
+    private Object id;
+
+    private Object devcode;
+
+    private Object devname;
+
+    private Object cid;
+
+    private Object depname;
+
+    private Object districtname;
+
+    private Object devtype;
+
+    private Object manager;
+
+    private Object tel;
+
+    //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String devdate;
+
+    private Object status;
+
+    private Object weightdevid;
+
+    private Object clockdevid;
+
+    private Object platenumber;
+
+    private Object offstatus;
+
+    private Object devid2;
+
+    private Object isdeleted;
+
+    private Object devid1;
+
+    private Object district;
+
+    private static final long serialVersionUID = 1L;
+
+    public Object getId() {
+        return id;
+    }
+
+    public void setId(Object id) {
+        this.id = id;
+    }
+
+    public Object getDevcode() {
+        return devcode;
+    }
+
+    public void setDevcode(Object devcode) {
+        this.devcode = devcode;
+    }
+
+    public Object getDevname() {
+        return devname;
+    }
+
+    public void setDevname(Object devname) {
+        this.devname = devname;
+    }
+
+    public Object getCid() {
+        return cid;
+    }
+
+    public void setCid(Object cid) {
+        this.cid = cid;
+    }
+
+    public Object getDepname() {
+        return depname;
+    }
+
+    public void setDepname(Object depname) {
+        this.depname = depname;
+    }
+
+    public Object getDistrictname() {
+        return districtname;
+    }
+
+    public void setDistrictname(Object districtname) {
+        this.districtname = districtname;
+    }
+
+    public Object getDevtype() {
+        return devtype;
+    }
+
+    public void setDevtype(Object devtype) {
+        this.devtype = devtype;
+    }
+
+    public Object getManager() {
+        return manager;
+    }
+
+    public void setManager(Object manager) {
+        this.manager = manager;
+    }
+
+    public Object getTel() {
+        return tel;
+    }
+
+    public void setTel(Object tel) {
+        this.tel = tel;
+    }
+
+    public String getDevdate() {
+        return devdate;
+    }
+
+    public void setDevdate(String devdate) {
+        this.devdate = devdate;
+    }
+
+    public Object getStatus() {
+        return status;
+    }
+
+    public void setStatus(Object status) {
+        this.status = status;
+    }
+
+    public Object getWeightdevid() {
+        return weightdevid;
+    }
+
+    public void setWeightdevid(Object weightdevid) {
+        this.weightdevid = weightdevid;
+    }
+
+    public Object getClockdevid() {
+        return clockdevid;
+    }
+
+    public void setClockdevid(Object clockdevid) {
+        this.clockdevid = clockdevid;
+    }
+
+    public Object getPlatenumber() {
+        return platenumber;
+    }
+
+    public void setPlatenumber(Object platenumber) {
+        this.platenumber = platenumber;
+    }
+
+    public Object getOffstatus() {
+        return offstatus;
+    }
+
+    public void setOffstatus(Object offstatus) {
+        this.offstatus = offstatus;
+    }
+
+    public Object getDevid2() {
+        return devid2;
+    }
+
+    public void setDevid2(Object devid2) {
+        this.devid2 = devid2;
+    }
+
+    public Object getIsdeleted() {
+        return isdeleted;
+    }
+
+    public void setIsdeleted(Object isdeleted) {
+        this.isdeleted = isdeleted;
+    }
+
+    public Object getDevid1() {
+        return devid1;
+    }
+
+    public void setDevid1(Object devid1) {
+        this.devid1 = devid1;
+    }
+
+    public Object getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(Object district) {
+        this.district = district;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("Hash = ").append(hashCode());
+        sb.append(", id=").append(id);
+        sb.append(", devcode=").append(devcode);
+        sb.append(", devname=").append(devname);
+        sb.append(", cid=").append(cid);
+        sb.append(", depname=").append(depname);
+        sb.append(", districtname=").append(districtname);
+        sb.append(", devtype=").append(devtype);
+        sb.append(", manager=").append(manager);
+        sb.append(", tel=").append(tel);
+        sb.append(", devdate=").append(devdate);
+        sb.append(", status=").append(status);
+        sb.append(", weightdevid=").append(weightdevid);
+        sb.append(", clockdevid=").append(clockdevid);
+        sb.append(", platenumber=").append(platenumber);
+        sb.append(", offstatus=").append(offstatus);
+        sb.append(", devid2=").append(devid2);
+        sb.append(", isdeleted=").append(isdeleted);
+        sb.append(", devid1=").append(devid1);
+        sb.append(", district=").append(district);
+        sb.append(", serialVersionUID=").append(serialVersionUID);
+        sb.append("]");
+        return sb.toString();
+    }
+}

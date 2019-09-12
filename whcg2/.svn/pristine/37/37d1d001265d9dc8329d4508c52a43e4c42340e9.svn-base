@@ -1,0 +1,10 @@
+package com.ltsk.whcg.service;
+
+import com.ltsk.whcg.entity.GasSiteNew;
+
+import java.util.List;
+
+public interface GasSupplyCenterService {
+    List<GasSiteNew> getAll(String xzqh);
+    Integer getSum();
+}

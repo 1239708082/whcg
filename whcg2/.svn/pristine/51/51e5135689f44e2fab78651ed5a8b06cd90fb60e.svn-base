@@ -1,0 +1,67 @@
+package com.ltsk.whcg.service.impl;
+
+import com.ltsk.whcg.service.WarningListService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import com.ltsk.whcg.entity.GasWarningList;
+import com.ltsk.whcg.entity.WarningList;
+import com.ltsk.whcg.gas.mapper.WarningListMapper;
+import com.ltsk.whcg.listener.XZQHListener;
+
+import org.bouncycastle.jcajce.provider.symmetric.AES.Wrap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class WarningListServiceImpl implements WarningListService {
+
+	@Autowired
+	private WarningListMapper warningListMapper;
+
+	@Override
+	public List<WarningList> getAll() {
+		try {
+			return warningListMapper.getAll();
+		} catch (Exception e) {
+			log.error("获得燃气报警失败");
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<GasWarningList> getWarning(String xzqh) {
+		Map<String, String> map = XZQHListener.XZQHMap;
+//		xzqh = map.get(xzqh);
+		List<GasWarningList> gasWarningList = new ArrayList<>();
+//		if ("全市".equals(xzqh)) {
+			for (String s : map.keySet()) {
+				xzqh = map.get(s);
+				if ("420120000000".equals(s)) {
+					xzqh = "东湖风景区";
+				} else if ("420119000000".equals(s)) {
+					xzqh = "东湖高新区";
+				} else if ("420118000000".equals(s)) {
+					xzqh = "武汉经济开发区";
+				}else if ("420100000000".equals(s)||"420101000000".equals(s)){
+					continue;
+				}
+				GasWarningList gas  = new GasWarningList();
+				Integer todayNum = warningListMapper.getWarningToday(xzqh);
+				Integer yesNum = warningListMapper.getWarningYesterday(xzqh);
+				gas.setTodayDate(Integer.toString(todayNum));
+				gas.setYesterdayDate(Integer.toString(yesNum));
+				gas.setXzqh(xzqh);
+				gasWarningList.add(gas);
+			}
+			return gasWarningList;
+//		}else{
+//			return null;
+//		}
+	}
+}

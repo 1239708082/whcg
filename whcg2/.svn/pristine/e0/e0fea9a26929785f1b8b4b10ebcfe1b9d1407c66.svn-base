@@ -1,0 +1,31 @@
+package com.ltsk.whcg.task;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import com.ltsk.whcg.entity.ServerStatistics;
+import com.ltsk.whcg.zhjg.mapper.ServerMapper;
+import com.ltsk.whcg.zhjg.mapper.ServiceManageMapper;
+
+@Component
+public class ServerStatisticsTask {
+	
+	@Autowired
+	private ServiceManageMapper serviceManageMapper;
+//  添加推送访问记录
+    @Scheduled(fixedRate=60000)
+	public void mytask() {
+    	ServerStatistics serverStatistics = new ServerStatistics();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+		String date = df.format(new Date());//获取当前时间
+    	serverStatistics.setTime(date);
+    	serverStatistics.setName("warningData_xzqh");
+    	serverStatistics.setUsertype("全市");
+    	serverStatistics.setServertype("1");
+		serviceManageMapper.addServerStatistics(serverStatistics);
+	}
+}

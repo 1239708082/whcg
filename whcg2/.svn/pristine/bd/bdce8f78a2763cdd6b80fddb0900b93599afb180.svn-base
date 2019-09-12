@@ -1,0 +1,16 @@
+package com.ltsk.whcg.base.mapper;
+
+import com.ltsk.whcg.entity.Muck;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface MuckMapper {
+
+    @Select("select t.vehicleNo,t.deviceno,t.gpsdatetime,t.address,t.gdx,t.gdy from muck  t where t.updatetime >( sysdate - (1/480 )) and t.vehiclestatusid in ('1','2')")
+    List<Muck> getAll();
+    @Select("select count(*) from muck")
+    Integer get_sum();
+}
